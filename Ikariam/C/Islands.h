@@ -8,7 +8,7 @@ typedef struct {
 
 float distance(island a, island b);
 float calc_time(int h, int min, float sec);
-float *get_distances(float time, float epsi);
+float *get_distances();
 
 
-island *find(island isl, float time, float epsi);
+island *find(island isl, float time);
