@@ -52,10 +52,12 @@ island *find(island isl, float time) {
                 }
             }
         }
+        posibilities[l].x = -1;
+        posibilities[l++].y = -1;
         dists++;
     }
-    posibilities[l++].x = 0;
-    posibilities[l].y = 0;
+    posibilities[--l].x = 0;
+    posibilities[l++].y = 0;
     free(cp);
     posibilities = realloc(posibilities, l * sizeof(island));
     return posibilities;
