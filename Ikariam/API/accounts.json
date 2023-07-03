@@ -1,0 +1,254 @@
+[
+    {
+        "server": {
+            "language": "pl",
+            "number": 1
+        },
+        "id": 772503,
+        "gameAccountId": 772503,
+        "name": "Strus",
+        "accountGroup": "pl_1",
+        "lastPlayed": "2023-06-30T14:48:31+0200",
+        "lastLogin": "2023-06-30T12:48:31+0000",
+        "blocked": false,
+        "bannedUntil": null,
+        "bannedReason": "",
+        "details": [
+            {
+                "type": "literal",
+                "title": "myAccounts.rank",
+                "value": "3034"
+            },
+            {
+                "type": "localized",
+                "title": "myAccounts.status",
+                "value": "playerStatus.active"
+            }
+        ],
+        "sitting": {
+            "shared": false,
+            "endTime": null,
+            "cooldownTime": null
+        },
+        "trading": {
+            "trading": false,
+            "cooldownTime": null
+        }
+    },
+    {
+        "server": {
+            "language": "pl",
+            "number": 1
+        },
+        "id": 772504,
+        "gameAccountId": 772504,
+        "name": "O od n",
+        "accountGroup": "pl_1",
+        "lastPlayed": "2023-07-03T19:17:15+0000",
+        "lastLogin": "2023-07-03T19:17:15+0000",
+        "blocked": false,
+        "bannedUntil": null,
+        "bannedReason": "",
+        "details": [
+            {
+                "type": "literal",
+                "title": "myAccounts.rank",
+                "value": "3020"
+            },
+            {
+                "type": "localized",
+                "title": "myAccounts.status",
+                "value": "playerStatus.active"
+            }
+        ],
+        "sitting": {
+            "shared": false,
+            "endTime": null,
+            "cooldownTime": null
+        },
+        "trading": {
+            "trading": false,
+            "cooldownTime": null
+        }
+    },
+    {
+        "server": {
+            "language": "pl",
+            "number": 1
+        },
+        "id": 772505,
+        "gameAccountId": 772505,
+        "name": "O\u0142omiany",
+        "accountGroup": "pl_1",
+        "lastPlayed": "2023-06-30T14:48:23+0200",
+        "lastLogin": "2023-06-30T12:48:23+0000",
+        "blocked": false,
+        "bannedUntil": null,
+        "bannedReason": "",
+        "details": [
+            {
+                "type": "literal",
+                "title": "myAccounts.rank",
+                "value": "3019"
+            },
+            {
+                "type": "localized",
+                "title": "myAccounts.status",
+                "value": "playerStatus.active"
+            }
+        ],
+        "sitting": {
+            "shared": false,
+            "endTime": null,
+            "cooldownTime": null
+        },
+        "trading": {
+            "trading": false,
+            "cooldownTime": null
+        }
+    },
+    {
+        "server": {
+            "language": "pl",
+            "number": 1
+        },
+        "id": 772506,
+        "gameAccountId": 772506,
+        "name": "O\u0142omusta",
+        "accountGroup": "pl_1",
+        "lastPlayed": "2023-06-30T01:56:59+0200",
+        "lastLogin": "2023-06-29T22:15:55+0000",
+        "blocked": false,
+        "bannedUntil": null,
+        "bannedReason": "",
+        "details": [
+            {
+                "type": "literal",
+                "title": "myAccounts.rank",
+                "value": "1171"
+            },
+            {
+                "type": "localized",
+                "title": "myAccounts.status",
+                "value": "playerStatus.vacation"
+            }
+        ],
+        "sitting": {
+            "shared": false,
+            "endTime": null,
+            "cooldownTime": null
+        },
+        "trading": {
+            "trading": false,
+            "cooldownTime": null
+        }
+    },
+    {
+        "server": {
+            "language": "pl",
+            "number": 1
+        },
+        "id": 772507,
+        "gameAccountId": 772507,
+        "name": "Atlas90",
+        "accountGroup": "pl_1",
+        "lastPlayed": "2023-07-03T19:18:28+0000",
+        "lastLogin": "2023-07-03T19:18:28+0000",
+        "blocked": false,
+        "bannedUntil": null,
+        "bannedReason": "",
+        "details": [
+            {
+                "type": "literal",
+                "title": "myAccounts.rank",
+                "value": "2994"
+            },
+            {
+                "type": "localized",
+                "title": "myAccounts.status",
+                "value": "playerStatus.active"
+            }
+        ],
+        "sitting": {
+            "shared": false,
+            "endTime": null,
+            "cooldownTime": null
+        },
+        "trading": {
+            "trading": false,
+            "cooldownTime": null
+        }
+    },
+    {
+        "server": {
+            "language": "pl",
+            "number": 1
+        },
+        "id": 772804,
+        "gameAccountId": 772804,
+        "name": "mmm",
+        "accountGroup": "pl_1",
+        "lastPlayed": "2023-06-29T22:50:43+0200",
+        "lastLogin": "2023-06-29T20:50:43+0000",
+        "blocked": false,
+        "bannedUntil": null,
+        "bannedReason": "",
+        "details": [
+            {
+                "type": "literal",
+                "title": "myAccounts.rank",
+                "value": "3846"
+            },
+            {
+                "type": "localized",
+                "title": "myAccounts.status",
+                "value": "playerStatus.vacation"
+            }
+        ],
+        "sitting": {
+            "shared": false,
+            "endTime": null,
+            "cooldownTime": null
+        },
+        "trading": {
+            "trading": false,
+            "cooldownTime": null
+        }
+    },
+    {
+        "server": {
+            "language": "pl",
+            "number": 1
+        },
+        "id": 773113,
+        "gameAccountId": 773113,
+        "name": "X-blast",
+        "accountGroup": "pl_1",
+        "lastPlayed": "2023-06-29T22:49:48+0200",
+        "lastLogin": "2023-06-29T20:49:48+0000",
+        "blocked": false,
+        "bannedUntil": null,
+        "bannedReason": "",
+        "details": [
+            {
+                "type": "literal",
+                "title": "myAccounts.rank",
+                "value": "2407"
+            },
+            {
+                "type": "localized",
+                "title": "myAccounts.status",
+                "value": "playerStatus.active"
+            }
+        ],
+        "sitting": {
+            "shared": false,
+            "endTime": null,
+            "cooldownTime": null
+        },
+        "trading": {
+            "trading": false,
+            "cooldownTime": null
+        }
+    }
+]
