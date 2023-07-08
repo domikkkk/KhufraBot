@@ -1,8 +1,7 @@
 import ctypes
-import os
 
 
-c = ctypes.CDLL(os.getcwd() + '/ika.so')
+c = ctypes.CDLL('./C/ika.so')
 
 
 class island(ctypes.Structure):
