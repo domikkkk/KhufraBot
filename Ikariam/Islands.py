@@ -1,7 +1,7 @@
 import ctypes
 
 
-c = ctypes.CDLL('./C/ika.so')
+c = ctypes.CDLL('./Ikariam/C/ika.so')
 
 
 class island(ctypes.Structure):
@@ -84,20 +84,11 @@ get_distances = c.get_distances
 qsort = c.qqsort
 
 
-import sys
-
-
-def f():
-    arg = sys.argv[1:]
-    arg = [int(s) for s in arg]
+def calc(*args):
+    if len(args) < 5:
+        raise Exception("Za mało argumentów")
+    arg = [int(s) for s in args]
     a = find(island(arg[0], arg[1]), calc_time(arg[2], arg[3], arg[4]))
     bonus = Bonus()
     a = bonus.parse(a)
-    print(a)
-
-
-f()
-
-del ctypes
-del island
-del sys
+    return a
