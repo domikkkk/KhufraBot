@@ -5,6 +5,7 @@ class Ship:
     cost = None
     discount = 14
     rg = None
+    name = None
 
     def ret_cost(self, l: int=0):
         l = min(25, l)
@@ -13,6 +14,9 @@ class Ship:
 
     def ret_cost_of_n(self, n: int, l: int=0):
         return self.ret_cost(l) * n
+
+    def __str__(self):
+        return self.name
 
 class Shoot(Ship):
     amo = None
@@ -24,6 +28,7 @@ class Steam(Ship):
         self.armor = 22
         self.attack = 172
         self.rg = 24
+        self.name = 'Parowy'
 
 
 class Ram(Ship):
@@ -33,6 +38,7 @@ class Ram(Ship):
         self.armor = 15
         self.attack = 81
         self.rg = 5
+        self.name = 'Kajak'
 
 
 class Mortar(Shoot):
@@ -43,6 +49,7 @@ class Mortar(Shoot):
         self.armor = 12
         self.attack = 75
         self.rg = 22.4
+        self.name = 'Moski'
 
 
 class Rocket(Shoot):
@@ -53,6 +60,7 @@ class Rocket(Shoot):
         self.armor = 12
         self.attack = 386
         self.rg = 28
+        self.name = 'Rakiety'
 
 
 class Paddle(Shoot):
@@ -63,6 +71,7 @@ class Paddle(Shoot):
         self.armor = 6
         self.attack = 18
         self.rg = 6.4
+        self.name = 'Smig'
 
 
 class Carrier(Shoot):
@@ -73,6 +82,7 @@ class Carrier(Shoot):
         self.armor = 6
         self.attack = 106
         self.rg = 28
+        self.name = 'Balon'
 
 
 class Tender(Ship):
@@ -82,6 +92,7 @@ class Tender(Ship):
         self.armor = None
         self.attack = None
         self.rg = 16
+        self.name = 'Pomoc'
 
 
 class Fire(Ship):
@@ -91,6 +102,7 @@ class Fire(Ship):
         self.armor = 14
         self.attack = 88
         self.rg = 6.2
+        self.name = 'Miotla'
 
 
 class Diving(Shoot):
@@ -101,3 +113,4 @@ class Diving(Shoot):
         self.armor = 12
         self.attack = 129
         self.rg = 20.2
+        self.name = 'Podwodny'
