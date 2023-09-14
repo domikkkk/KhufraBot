@@ -29,6 +29,8 @@ class Composition():
         res = {}
         for s in self.comp:
             res[str(s)] = self.comp[s]
+            if self.comp[s] == 0:
+                del res[str(s)]
         return f'{res}'
 
 

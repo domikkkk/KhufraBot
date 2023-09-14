@@ -28,7 +28,7 @@ class Steam(Ship):
         self.armor = 22
         self.attack = 172
         self.rg = 24
-        self.name = 'Parowy'
+        self.name = 'Parowe'
 
 
 class Ram(Ship):
@@ -38,7 +38,7 @@ class Ram(Ship):
         self.armor = 15
         self.attack = 81
         self.rg = 5
-        self.name = 'Kajak'
+        self.name = 'Kajaki'
 
 
 class Mortar(Shoot):
@@ -71,7 +71,7 @@ class Paddle(Shoot):
         self.armor = 6
         self.attack = 18
         self.rg = 6.4
-        self.name = 'Smig'
+        self.name = 'Smigi'
 
 
 class Carrier(Shoot):
@@ -82,7 +82,7 @@ class Carrier(Shoot):
         self.armor = 6
         self.attack = 106
         self.rg = 28
-        self.name = 'Balon'
+        self.name = 'Balony'
 
 
 class Tender(Ship):
