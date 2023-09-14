@@ -5,7 +5,8 @@ from Common import TOKEN
 from Ikariam.Islands import calc, distance, qsort, calc_time
 from Jap.keyboard import parse, parse_foreach
 import time
-from Ikariam.Koszty import Composition, estimate_nD
+import datetime
+from Ikariam.Koszty import Composition, estimate_nD, upkeep_h
 
 
 intents = discord.Intents().default()
@@ -16,6 +17,23 @@ intents.reactions = True
 
 
 Khufra = commands.Bot(command_prefix='?', intents=intents)
+
+
+async def error(interaction: discord.Interaction, e: Exception):
+    member = interaction.client.get_user(687957649635147888)
+    await interaction.response.send_message('Coś poszło nie tak ...', ephemeral=True)
+    try:
+        person = interaction.user.nick
+    except Exception:
+        person = interaction.user.name
+    try:
+        canal = interaction.channel.name
+    except Exception:
+        canal = interaction.channel_id
+    function = interaction.command.name
+    await member.send(f'Osoba {person} na kanale {canal} miała problem z funkcją\
+    {function} o godzinie {datetime.datetime.now()}:\n{e}')
+
 
 @Khufra.event
 async def on_ready():
@@ -32,7 +50,7 @@ async def kana(interaction: discord.Interaction, text: str):
         res = parse_foreach(text)
         await interaction.response.send_message(res)
     except Exception as e:
-        await interaction.response.send_message(e, ephemeral=True)
+        await error(interaction, e)
 
 
 @Khufra.tree.command()
@@ -50,7 +68,7 @@ async def find(interaction: discord.Interaction, x: int, y:int, h:int, m:int, s:
         time.sleep(1)
         await interaction.channel.send(res)
     except Exception as e:
-        await interaction.response.send_message(e, ephemeral=True)
+        await error(interaction, e)
 
 
 @Khufra.tree.command()
@@ -63,7 +81,23 @@ async def cost(interaction: discord.Interaction, dni:int, lv: int, czy_24: bool,
         res = f'# Przypuszczalny koszt przy następujących parametrach:\n* poziom żeglugi {lv},\n* na {dni} dni,\n* {czy_24},\n* {nu_siebie},\nto: {cost} złota'
         await interaction.response.send_message(res)
     except Exception as e:
-        await interaction.response.send_message(e, ephemeral=True)
+        await error(interaction, e)
+
+
+@Khufra.tree.command()
+@app_commands.describe(t = 'Na ile h flota?', lv = 'Poziom przyszłości żeglugi?')
+async def ships(interaction: discord.Interaction, t: int, lv: int=0):
+    try:
+        fleet = Composition(t)
+        upkeep = upkeep_h(fleet, lv)
+        await interaction.response.send_message(f'{fleet}\nKoszt utrzymania na 1h: {upkeep}')  
+    except Exception as e:
+        await error(interaction, e)
+
+
+@Khufra.tree.command()
+async def test(interaction: discord.Interaction):
+    pass
 
 
 Khufra.run(TOKEN)
