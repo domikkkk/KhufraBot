@@ -40,6 +40,10 @@ def parse(text: str):
     fon = text[0]
     kana = ''
     kana, fon = parse_one(kana, fon, basic)
+    if len(text) < 2:
+        if len(kana) < 1:
+            raise Exception(f'Coś tam, coś tam, dziwne znaki')
+        return kana
     for j, letter in enumerate(text[1:-1]):
         i = j+1
         if letter == text[i+1] and letter not in vowels and fon == '':
@@ -106,11 +110,11 @@ def parse_foreach(words):
     return kana
 
 
-import sys
+# import sys
 
-if __name__ == "__main__":
-    arg = sys.argv[1:]
-    kana = ''
-    for word in arg:
-        kana += parse(word)
-    print(kana)
+# if __name__ == "__main__":
+#     arg = sys.argv[1:]
+#     kana = ''
+#     for word in arg:
+#         kana += parse(word)
+#     print(kana)
