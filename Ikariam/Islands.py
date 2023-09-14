@@ -54,13 +54,14 @@ class Bonus:
             x.append((cords.x, cords.y))
 
     def parse(self, arg):
-        for x in range(100):
-            if arg[x].x == 0:
-                if not self.result[self.counter][1]:
-                    del self.result[self.counter]
-                return self.result
-            self._parse(arg[x])
+        i = 0
+        while arg[i].x != 0:
+            self._parse(arg[i])
+            i += 1
+        if not self.result[self.counter][1]:
+            del self.result[self.counter]
         return self.result
+            
 
 
 c.distance.argtypes = (island, island)
