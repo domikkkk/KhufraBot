@@ -9,7 +9,7 @@ class Composition():
     def __init__(self, t: float) -> None:
         self.comp = {
             Steam(): 100 + 15 * t * 4,
-            Carrier(): 10 + 2 * t * 4,
+            Carrier(): 7 + 2 * t * 4,
             Ram(): 150 + 18 * t * 4,
             Rocket(): 30 + 11 * 2 * t,
             Mortar(): 42 * ceil(4 * t / 5),
@@ -66,7 +66,7 @@ def estimate_1D(lv: int=0, czy_24: bool=0, nu_siebie: int=0):
 
 def estimate_nD(d: int=0, lv: int=0, czy_24: bool=0, nu_siebie: int=0):
     nu_siebie = min(max(nu_siebie, 0), 1)
-    return d * estimate_1D(lv=lv, czy_24=czy_24, nu_siebie=nu_siebie)
+    return round(d * estimate_1D(lv=lv, czy_24=czy_24, nu_siebie=nu_siebie), 2)
 
 if __name__ == '__main__':
     print(estimate_nD(30, 12, 0, 1))
