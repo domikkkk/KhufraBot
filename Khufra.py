@@ -43,7 +43,7 @@ async def on_ready():
     print(guilds)
 
 
-@Khufra.tree.command()
+@Khufra.tree.command(description="Stara się zamienić tekst romaji na zapis w katakanie")
 @app_commands.describe(text = "To co chcesz dostać po japońsku w katakanie")
 async def kana(interaction: discord.Interaction, text: str):
     try:
@@ -53,12 +53,12 @@ async def kana(interaction: discord.Interaction, text: str):
         await error(interaction, e)
 
 
-@Khufra.tree.command()
+@Khufra.tree.command(description="To chyba oczywiste...")
 async def ping(interaction: discord.Interaction):
-    await interaction.response.send_message(f"{Khufra.latency * 1000}ms")
+    await interaction.response.send_message(f"{round(Khufra.latency * 1000, 1)}ms")
 
 
-@Khufra.tree.command()
+@Khufra.tree.command(description="Szuka możliwych koordynatów skąd przeciwnik może skupować rg")
 @app_commands.describe(x = 'Kordynat x wyspy', y = "Kordynat y wyspy", h = "Godziny płynięcia", m = "Minuty płynięcia", s = "Sekundy płynięcia")
 async def find(interaction: discord.Interaction, x: int, y:int, h:int, m:int, s:int):
     args = [x, y, h, m, s]
@@ -71,7 +71,7 @@ async def find(interaction: discord.Interaction, x: int, y:int, h:int, m:int, s:
         await error(interaction, e)
 
 
-@Khufra.tree.command()
+@Khufra.tree.command(description="Przewiduje koszty 1 walki w określonym czasie")
 @app_commands.describe(dni = 'Ile dni?', lv = 'Poziom Żeglugi', czy_24 = 'Czy preferowany składy 24h. 12h w przeciwnym wypadku?', nu_siebie = 'Czy walka jest poza swoim portem?')
 async def cost(interaction: discord.Interaction, dni:int, lv: int, czy_24: bool, nu_siebie: bool):
     try:
@@ -84,7 +84,7 @@ async def cost(interaction: discord.Interaction, dni:int, lv: int, czy_24: bool,
         await error(interaction, e)
 
 
-@Khufra.tree.command()
+@Khufra.tree.command(description="Wyznacza skład na podany czas z zapasem na około 1h")
 @app_commands.describe(t = 'Na ile h flota?', lv = 'Poziom przyszłości żeglugi?')
 async def ships(interaction: discord.Interaction, t: int, lv: int=0):
     try:
@@ -95,9 +95,34 @@ async def ships(interaction: discord.Interaction, t: int, lv: int=0):
         await error(interaction, e)
 
 
-@Khufra.tree.command()
-async def test(interaction: discord.Interaction):
-    pass
+@Khufra.tree.command(description="Discordowy licznik")
+@app_commands.describe(t = "Ile chcesz odliczać w s?")
+async def timer(interaction: discord.Interaction, t: int=0):
+    utc = round(time.time()) + t
+    await interaction.response.send_message(f"<t:{utc}:R>")
+
+
+@Khufra.tree.command(description="Oblicza limit garnizonu lądowego")
+@app_commands.describe(t = "Poziom ratusza", w = "Poziom muru")
+async def lad(interaction: discord.Interaction, t: int, w: int):
+    land = 250 + (t + w) * 50
+    await interaction.response.send_message(land)
+
+
+@Khufra.tree.command(description="Oblicza limit garnizonu morskiego")
+@app_commands.describe(m = "Wyższy poziom stoczni lub portu")
+async def mor(interaction: discord.Interaction, m: int):
+    sea = 125 + m * 25
+    await interaction.response.send_message(sea)
+
+
+@Khufra.tree.command(description="Wyznacza ilość punktów akcji dla podanego poziomu ratusza")
+@app_commands.describe(r = "Poziom ratusza")
+async def a_p(interaction: discord.Interaction, r: int):
+    if r < 1:
+        await interaction.response.send_message("Poziom nie może być mniejszy od 1", ephemeral=True)
+    p = 3 + r // 4
+    await interaction.response.send_message(f"{p} / {p-2}")
 
 
 Khufra.run(TOKEN)
