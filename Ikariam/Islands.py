@@ -1,4 +1,5 @@
 import ctypes
+import csv
 
 
 c = ctypes.CDLL('./Ikariam/C/ika.so')
@@ -10,6 +11,12 @@ class island(ctypes.Structure):
         ('y', ctypes.c_int)
     ]
 
+
+class miotly(ctypes.Structure):
+    _fields_ = [
+        ('i', ctypes.POINTER(island)),
+        ('t', ctypes.c_float)
+    ]
 
 class Bonus:
     def __init__(self) -> None:
@@ -78,11 +85,18 @@ c.qqsort.argtypes = (ctypes.POINTER(ctypes.c_float), ctypes.c_int, ctypes.c_int)
 c.find.argtypes = (island, ctypes.c_float)
 c.find.restype = ctypes.POINTER(island)
 
+c.czasy.argtypes = (ctypes.POINTER(island), island)
+c.czasy.restype = ctypes.POINTER(miotly)
+
+
+# c.queue.argtypes = (ctypes.POINTER(island))
+
 distance = c.distance
 calc_time = c.calc_time
 find = c.find
 get_distances = c.get_distances
 qsort = c.qqsort
+czasy = c.czasy
 
 
 def calc(*args):
@@ -93,3 +107,20 @@ def calc(*args):
     bonus = Bonus()
     a = bonus.parse(a)
     return a
+
+
+def read_file(filename: str):
+    with open(filename, 'r') as f:
+        reader = csv.reader(f, delimiter=';')
+        islands = []
+        for line in reader:
+            islands.append(island(int(line[0]), int(line[1])))
+        a = czasy(*islands, island(18, 47))
+        # print([(i.x, i.y) for i in islands])
+    i = 0
+    while a[i].t !=0:
+        print(a[i].i.contents.x, a[i].i.contents.y, a[i].t)
+        i += 1
+
+
+read_file('./Ikariam/wyspy.csv')
