@@ -85,7 +85,7 @@ c.qqsort.argtypes = (ctypes.POINTER(ctypes.c_float), ctypes.c_int, ctypes.c_int)
 c.find.argtypes = (island, ctypes.c_float)
 c.find.restype = ctypes.POINTER(island)
 
-c.czasy.argtypes = (ctypes.POINTER(island), island)
+c.czasy.argtypes = (ctypes.POINTER(island), ctypes.c_int, island)
 c.czasy.restype = ctypes.POINTER(miotly)
 
 
@@ -115,11 +115,12 @@ def read_file(filename: str):
         islands = []
         for line in reader:
             islands.append(island(int(line[0]), int(line[1])))
-        a = czasy(*islands, island(18, 47))
-        # print([(i.x, i.y) for i in islands])
+        n = len(islands)
+        islands_a = (island * n)(*islands)
+        a = czasy(islands_a, n, island(18, 47))
     i = 0
-    while a[i].t !=0:
-        print(a[i].i.contents.x, a[i].i.contents.y, a[i].t)
+    while i < n:
+        print(a[i].i[0].x, a[i].i[0].y, a[i].t)
         i += 1
 
 
