@@ -124,4 +124,4 @@ def read_file(filename: str):
         i += 1
 
 
-read_file('./Ikariam/wyspy.csv')
+# read_file('./Ikariam/wyspy.csv')

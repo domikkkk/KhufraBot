@@ -41,6 +41,18 @@ async def on_ready():
     print(len(synced))
     guilds = Khufra.guilds
     print(guilds)
+    guilds = Khufra.guilds
+    guild = next((g for g in guilds if g.name == "Bolki"), None)
+    names = []
+    for member in guild.get_channel(914664266118873118).members:
+        if member.bot:
+            continue
+        name = member.nick if member.nick is not None else member.global_name
+        if not name:
+            name = member.name
+        names.append(name)
+    for name in sorted(names):
+        print(name)
 
 
 @Khufra.tree.command(description="Stara się zamienić tekst romaji na zapis w katakanie")
