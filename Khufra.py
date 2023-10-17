@@ -52,7 +52,7 @@ async def on_ready():
         name = member.nick if member.nick is not None else member.global_name
         if not name:
             name = member.name
-        names.append(name)
+        names.append(name.lower())
     for name in sorted(names):
         print(name)
 
