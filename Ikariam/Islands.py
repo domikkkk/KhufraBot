@@ -93,7 +93,6 @@ distance = c.distance
 calc_time = c.calc_time
 find = c.find
 get_distances = c.get_distances
-qsort = c.qqsort
 czasy = c.czasy
 
 
@@ -122,4 +121,5 @@ def read_file(filename: str):
         i += 1
 
 
+print(calc(81, 9, 27, 1, 37))
 # read_file('./Ikariam/wyspy.csv')
