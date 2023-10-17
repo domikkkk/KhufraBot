@@ -81,10 +81,10 @@ async def ping(interaction: discord.Interaction):
 async def find(interaction: discord.Interaction, x: int, y: int, h: int,
                m: int, s: int):
     args = [x, y, h, m, s]
+    content = f"Searching from [{x} {y}] with time {h}:{m}:{s}\n"
     try:
         res = calc(*args)
-        await interaction.response.send_message(f"Searching from\
-            [{x} {y}] with time {h}:{m}:{s}\n")
+        await interaction.response.send_message(content)
         time.sleep(1)
         await interaction.channel.send(res)
     except Exception as e:
@@ -118,8 +118,8 @@ async def ships(interaction: discord.Interaction, t: int, lv: int = 0):
     try:
         fleet = Composition(t)
         upkeep = upkeep_h(fleet, lv)
-        await interaction.response.send_message(f'{fleet}\n\
-            Koszt utrzymania na 1h: {upkeep}')
+        content = f'{fleet}\n Koszt utrzymania na 1h: {upkeep}'
+        await interaction.response.send_message(content)
     except Exception as e:
         await error(interaction, e)
 
