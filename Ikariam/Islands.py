@@ -18,6 +18,7 @@ class miotly(ctypes.Structure):
         ('t', ctypes.c_float)
     ]
 
+
 class Bonus:
     def __init__(self) -> None:
         self.auto()
@@ -68,7 +69,6 @@ class Bonus:
         if not self.result[self.counter][1]:
             del self.result[self.counter]
         return self.result
-            
 
 
 c.distance.argtypes = (island, island)
@@ -79,8 +79,6 @@ c.calc_time.restype = ctypes.c_float
 
 c.get_distances.argtypes = ()
 c.get_distances.restype = ctypes.POINTER(ctypes.c_float)
-
-c.qqsort.argtypes = (ctypes.POINTER(ctypes.c_float), ctypes.c_int, ctypes.c_int)
 
 c.find.argtypes = (island, ctypes.c_float)
 c.find.restype = ctypes.POINTER(island)
