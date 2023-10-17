@@ -1,5 +1,5 @@
 #include "Islands.h"
-#include "qsort.h"
+#include <stdlib.h>
 #include <math.h>
 #include <malloc.h>
 
@@ -14,21 +14,30 @@ float calc_time(int h, int min, float sec) {
 }
 
 
+int compare_t(const void *a, const void *b){
+    float _a = *((float *)a);
+    float _b = *((float *)b);
+    if (_a < _b) return -1;
+    else if (_a > _b) return 1;
+    else return 0;
+}
+
+
 float *get_distances() {
-    float *times = calloc(25, sizeof(float));
+    float *times = calloc(N, sizeof(float));
     for (int i = 0; i < 5; i++) {
         for (int j = 0; j < 5; j++){
             times[5*i + j] = (1.0 + (float)i) * (1.0 + (float)j / 6.0);
         }
     }
-    qqsort(times, 0, 24);
+    qsort(times, N, sizeof(float), compare_t);
     int j = 0;
-    for (int i=0; i<24; i++) {
+    for (int i=0; i<N-1; i++) {
         if(times[i] != times[i+1]) {
             times[j++] = times[i];
         }
     }
-    times[j++] = times[24];
+    times[j++] = times[N-1];
     *(times + j) = 0;
     times = realloc(times, j*sizeof(float));
     return times;
