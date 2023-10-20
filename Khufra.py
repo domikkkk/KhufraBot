@@ -7,6 +7,7 @@ from Jap.keyboard import parse_foreach
 import time
 import datetime
 from Ikariam.Koszty import Composition, estimate_nD, upkeep_h
+from Ikariam.Podkupowacz import Podkupowacz
 
 
 intents = discord.Intents().default()
@@ -43,18 +44,20 @@ async def on_ready():
     print(len(synced))
     guilds = Khufra.guilds
     print(guilds)
-    guilds = Khufra.guilds
-    guild = next((g for g in guilds if g.name == "Bolki"), None)
-    names = []
-    for member in guild.get_channel(914664266118873118).members:
-        if member.bot:
-            continue
-        name = member.nick if member.nick is not None else member.global_name
-        if not name:
-            name = member.name
-        names.append(name.lower())
-    for name in sorted(names):
-        print(name)
+    global e
+    e = Podkupowacz.Excel()
+    # guilds = Khufra.guilds
+    # guild = next((g for g in guilds if g.name == "Bolki"), None)
+    # names = []
+    # for member in guild.get_channel(914664266118873118).members:
+    #     if member.bot:
+    #         continue
+    #     name = member.nick if member.nick is not None else member.global_name
+    #     if not name:
+    #         name = member.name
+    #     names.append(name.lower())
+    # for name in sorted(names):
+    #     print(name)
 
 
 @Khufra.tree.command(description="Stara się zamienić tekst romaji na zapis w\
@@ -154,6 +157,22 @@ async def a_p(interaction: discord.Interaction, r: int):
             od 1", ephemeral=True)
     p = 3 + r // 4
     await interaction.response.send_message(f"{p} / {p-2}")
+
+
+@Khufra.tree.command(description='Wypisuje znane skabonki wroga')
+async def all_enemy_rg(interaction: discord.Interaction):
+    global e
+    rg_keepers = e.get_rg_keepers()
+    await interaction.response.send_message(f"```py\n{rg_keepers}\n```")
+
+
+@Khufra.tree.command(description='Wypisuje podkupowacze na jakie trzeba\
+    się zalogować w zależności od podanej otawrtej skarbonki')
+@app_commands.describe(enemy_name='Nazwa wrogiej skarbonki')
+async def enemy_rg(interaction: discord.Interaction, enemy_name: str):
+    global e
+    res = e.describe(enemy_name)
+    await interaction.response.send_message(res)
 
 
 Khufra.run(TOKEN)
