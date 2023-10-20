@@ -4,9 +4,9 @@ import os
 
 
 def get_data():
-    sheets = dict(pd.read_excel(os.getcwd() +\
-        "/Ikariam/Podkupowacz/Podkupowacze_1.xlsx", sheet_name=None))
-    x =  dict(sheets.get(list(sheets.keys())[0]))
+    sheets = pd.read_excel(os.getcwd() +\
+        "/Ikariam/Podkupowacz/Podkupowacze_1.xlsx", sheet_name=None)
+    x =  dict(dict(sheets.get(list(sheets.keys())[0])))
     del x["Unnamed: 3"]
     return x
 
@@ -37,7 +37,8 @@ class Excel:
                      self.sheet[self.theirs[2]])
         res = []
         for name, cords, city_name in zipped:
-            if podciąg(enemy_rg_name, name) / len(name) > 0.7:
+            if podciąg(enemy_rg_name, name) / max(len(name),
+                                                  len(enemy_rg_name)) > 0.7:
                 res.append([name, cords, city_name] + self.find_ally(cords))
         return res
 

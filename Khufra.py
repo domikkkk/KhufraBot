@@ -1,13 +1,14 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from Common import TOKEN
+from Common import TOKEN, ME
 from Ikariam.Islands import calc
 from Jap.keyboard import parse_foreach
 import time
 import datetime
-from Ikariam.Koszty import Composition, estimate_nD, upkeep_h
+# from Ikariam.Koszty import Composition, estimate_nD, upkeep_h
 from Ikariam.Podkupowacz import Podkupowacz
+from KhufraCommand import has_role
 
 
 intents = discord.Intents().default()
@@ -21,7 +22,7 @@ Khufra = commands.Bot(command_prefix='?', intents=intents)
 
 
 async def error(interaction: discord.Interaction, e: Exception):
-    member = interaction.client.get_user(687957649635147888)
+    member = interaction.client.get_user(ME)
     await interaction.response.send_message('Coś poszło nie tak ...',
                                             ephemeral=True)
     try:
@@ -46,8 +47,8 @@ async def on_ready():
     print(guilds)
     global e
     e = Podkupowacz.Excel()
-    # guilds = Khufra.guilds
-    # guild = next((g for g in guilds if g.name == "Bolki"), None)
+    guilds = Khufra.guilds
+    guild = next((g for g in guilds if g.name == "Stare D-S"), None)
     # names = []
     # for member in guild.get_channel(914664266118873118).members:
     #     if member.bot:
@@ -58,6 +59,24 @@ async def on_ready():
     #     names.append(name.lower())
     # for name in sorted(names):
     #     print(name)
+
+@Khufra.event
+async def on_message(mes: discord.Message):
+    global e
+    if mes.author.id == Khufra.user.id:
+        return
+    if mes.author.bot and mes.author.id == 757993517145391213:
+        mess = mes.content.lower()
+        idx = mess.find('zszedł z urlopu')
+        if idx == -1:
+            return
+        rg_name = mess[:idx-1].split(' ')[-1]
+        for name in e.get_rg_keepers():
+            if Podkupowacz.podciąg(name, rg_name) / max(len(name),
+                                                        len(rg_name)) > 0.75:
+                await mes.channel.send(e.describe(name))
+                return
+    return
 
 
 @Khufra.tree.command(description="Stara się zamienić tekst romaji na zapis w\
@@ -94,37 +113,37 @@ async def find(interaction: discord.Interaction, x: int, y: int, h: int,
         await error(interaction, e)
 
 
-@Khufra.tree.command(description="Przewiduje koszty 1 walki w określonym\
-    czasie")
-@app_commands.describe(dni='Ile dni?', lv='Poziom Żeglugi', czy_24='Czy\
-    preferowany składy 24h. 12h w przeciwnym wypadku?', nu_siebie='Czy\
-        walka jest poza swoim portem?')
-async def cost(interaction: discord.Interaction, dni: int, lv: int,
-               czy_24: bool, nu_siebie: bool):
-    try:
-        cost = estimate_nD(d=dni, lv=lv, czy_24=czy_24, nu_siebie=nu_siebie)
-        czy_24 = 'preferowane składy na {}h'.format(24 if czy_24 else 12)
-        nu_siebie = '{} mi{}'.format('po za' if nu_siebie else 'u siebie w',
-                                     'astem' if nu_siebie else 'eście')
-        res = f'# Przypuszczalny koszt przy następujących parametrach:\n*\
-            poziom żeglugi {lv},\n* na {dni} dni,\n* {czy_24},\n*\
-                {nu_siebie},\nto: {cost} złota'
-        await interaction.response.send_message(res)
-    except Exception as e:
-        await error(interaction, e)
+# @Khufra.tree.command(description="Przewiduje koszty 1 walki w określonym\
+#     czasie")
+# @app_commands.describe(dni='Ile dni?', lv='Poziom Żeglugi', czy_24='Czy\
+#     preferowany składy 24h. 12h w przeciwnym wypadku?', nu_siebie='Czy\
+#         walka jest poza swoim portem?')
+# async def cost(interaction: discord.Interaction, dni: int, lv: int,
+#                czy_24: bool, nu_siebie: bool):
+#     try:
+#         cost = estimate_nD(d=dni, lv=lv, czy_24=czy_24, nu_siebie=nu_siebie)
+#         czy_24 = 'preferowane składy na {}h'.format(24 if czy_24 else 12)
+#         nu_siebie = '{} mi{}'.format('po za' if nu_siebie else 'u siebie w',
+#                                      'astem' if nu_siebie else 'eście')
+#         res = f'# Przypuszczalny koszt przy następujących parametrach:\n*\
+#             poziom żeglugi {lv},\n* na {dni} dni,\n* {czy_24},\n*\
+#                 {nu_siebie},\nto: {cost} złota'
+#         await interaction.response.send_message(res)
+#     except Exception as e:
+#         await error(interaction, e)
 
 
-@Khufra.tree.command(description="Wyznacza skład na podany czas z zapasem na\
-    około 1h")
-@app_commands.describe(t='Na ile h flota?', lv='Poziom przyszłości żeglugi?')
-async def ships(interaction: discord.Interaction, t: int, lv: int = 0):
-    try:
-        fleet = Composition(t)
-        upkeep = upkeep_h(fleet, lv)
-        content = f'{fleet}\n Koszt utrzymania na 1h: {upkeep}'
-        await interaction.response.send_message(content)
-    except Exception as e:
-        await error(interaction, e)
+# @Khufra.tree.command(description="Wyznacza skład na podany czas z zapasem na\
+#     około 1h")
+# @app_commands.describe(t='Na ile h flota?', lv='Poziom przyszłości żeglugi?')
+# async def ships(interaction: discord.Interaction, t: int, lv: int = 0):
+#     try:
+#         fleet = Composition(t)
+#         upkeep = upkeep_h(fleet, lv)
+#         content = f'{fleet}\n Koszt utrzymania na 1h: {upkeep}'
+#         await interaction.response.send_message(content)
+#     except Exception as e:
+#         await error(interaction, e)
 
 
 @Khufra.tree.command(description="Discordowy licznik")
@@ -159,17 +178,17 @@ async def a_p(interaction: discord.Interaction, r: int):
     await interaction.response.send_message(f"{p} / {p-2}")
 
 
-@Khufra.tree.command(description='Wypisuje znane skabonki wroga')
+@Khufra.tree.command(description='Wypisuje znane skarbonki wroga')
 async def all_enemy_rg(interaction: discord.Interaction):
     global e
     rg_keepers = e.get_rg_keepers()
     await interaction.response.send_message(f"```py\n{rg_keepers}\n```")
 
 
-@Khufra.tree.command(description='Wypisuje podkupowacze na jakie trzeba\
-    się zalogować w zależności od podanej otawrtej skarbonki')
+@Khufra.tree.command(description='Wypisuje podkupowacze na jakiego trzeba\
+    się zalogować w zależności od podanej otwartej skarbonki')
 @app_commands.describe(enemy_name='Nazwa wrogiej skarbonki')
-async def enemy_rg(interaction: discord.Interaction, enemy_name: str):
+async def podkupowacz(interaction: discord.Interaction, enemy_name: str):
     global e
     res = e.describe(enemy_name)
     await interaction.response.send_message(res)
