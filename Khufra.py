@@ -8,6 +8,7 @@ import time
 import datetime
 # from Ikariam.Koszty import Composition, estimate_nD, upkeep_h
 from Ikariam.Podkupowacz import Podkupowacz
+from Ikariam.Podkupowacz.Podkupowacz import LOGINHASLO, LOGINHASLOZAJMOWACZY
 from KhufraCommand import has_role
 
 
@@ -49,16 +50,7 @@ async def on_ready():
     e = Podkupowacz.Excel()
     guilds = Khufra.guilds
     guild = next((g for g in guilds if g.name == "Stare D-S"), None)
-    # names = []
-    # for member in guild.get_channel(914664266118873118).members:
-    #     if member.bot:
-    #         continue
-    #     name = member.nick if member.nick is not None else member.global_name
-    #     if not name:
-    #         name = member.name
-    #     names.append(name.lower())
-    # for name in sorted(names):
-    #     print(name)
+
 
 @Khufra.event
 async def on_message(mes: discord.Message):
@@ -70,12 +62,19 @@ async def on_message(mes: discord.Message):
         idx = mess.find('zszedł z urlopu')
         if idx == -1:
             return
+        user = await Khufra.fetch_user(269481968461283328)
+        await user.send(LOGINHASLO)
+        await user.send(LOGINHASLOZAJMOWACZY)
         rg_name = mess[:idx-1].split(' ')[-1]
         for name in e.get_rg_keepers():
             if Podkupowacz.podciąg(name, rg_name) / max(len(name),
                                                         len(rg_name)) > 0.75:
                 await mes.channel.send(e.describe(name))
                 return
+    # if mes.author.id == 687957649635147888 and mes.content == 'test':
+    #     user = await Khufra.fetch_user(269481968461283328)
+    #     await user.send(LOGINHASLO)
+    #     await user.send(LOGINHASLOZAJMOWACZY)
     return
 
 

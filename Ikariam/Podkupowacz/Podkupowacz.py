@@ -3,6 +3,10 @@ import numpy as np
 import os
 
 
+LOGINHASLO = 'agrafia55@wp.plStefanek2020'
+LOGINHASLOZAJMOWACZY = 'kontawuja@interia.plKontaWujka1234'
+
+
 def get_data():
     sheets = pd.read_excel(os.getcwd() +\
         "/Ikariam/Podkupowacz/Podkupowacze_1.xlsx", sheet_name=None)
