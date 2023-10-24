@@ -5,6 +5,7 @@ import os
 
 LOGINHASLO = 'agrafia55@wp.plStefanek2020'
 LOGINHASLOZAJMOWACZY = 'kontawuja@interia.plKontaWujka1234'
+CZAS_PLYNIECIA = 1200  # %s = 20min
 
 
 def get_data():
@@ -35,7 +36,7 @@ class Excel:
                  names.append(name)
         return list(sorted(set(names)))
 
-    def find_potential_client(self, enemy_rg_name):
+    def find_seller(self, enemy_rg_name):
         zipped = zip(self.sheet[self.theirs[0]],
                      self.sheet[self.theirs[1]],
                      self.sheet[self.theirs[2]])
@@ -43,26 +44,39 @@ class Excel:
         for name, cords, city_name in zipped:
             if podciąg(enemy_rg_name, name) / max(len(name),
                                                   len(enemy_rg_name)) > 0.7:
-                res.append([name, cords, city_name] + self.find_ally(cords))
+                allies = self.find_allies(cords)
+                for ally in allies:
+                    res.append([name, city_name, cords] + ally)
         return res
 
-    def find_ally(self, cord):
-        ans = []
+    def find_allies(self, cord):
+        allies = []
         zipped = zip(self.sheet[self.ours[0]],
                      self.sheet[self.ours[1]],
                      self.sheet[self.ours[2]])
         for name, town_name, cor in zipped:
-            if distance(cor, cord) < 4:
-                return [name, town_name, cor]
-        return ans
+            if distance(cor, cord) < 3:
+                if [name, town_name.lower(), cor] not in allies:
+                    allies.append([name, town_name.lower(), cor])
+        return allies
+            
 
     def describe(self, enemy_rg_name):
-        all = self.find_potential_client(enemy_rg_name)
+        all = self.find_seller(enemy_rg_name)
         if not all:
             return 'Brak danych o tej skarbonce'
         res = ""
         for i in all:
-            res += f"{' '.join(i[:3])} => Loguj {' '.join(i[3:])}\n"
+            dist = distance(i[2], i[5])
+            t_time = round(dist * CZAS_PLYNIECIA)
+            min_time, s_time = t_time // 60, t_time % 60
+            res += f"{' '.join(i[:3]):<32} =>  Loguj {' '.join(i[3:]):<35}"
+            res += f"\t  Śmig: {min_time if min_time != 0 else 10}min"
+            res += '\t' if s_time == 0 else f" {s_time}s"
+            t_time = round(dist * CZAS_PLYNIECIA * 3 / 5)
+            min_time, s_time = t_time // 60, t_time % 60
+            res += f"  Handlowy: {min_time if min_time != 0 else 6}min"
+            res += '\n' if s_time == 0 else f" {s_time}s\n"
         return res[:-1]
 
 
@@ -89,4 +103,3 @@ def podciąg(s1: str, s2: str):
 
 
 # e = Excel()
-# print(e.describe('dabem'))

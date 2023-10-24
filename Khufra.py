@@ -10,6 +10,7 @@ import datetime
 from Ikariam.Podkupowacz import Podkupowacz
 from Ikariam.Podkupowacz.Podkupowacz import LOGINHASLO, LOGINHASLOZAJMOWACZY
 from KhufraCommand import has_role
+import logging
 
 
 intents = discord.Intents().default()
@@ -19,7 +20,9 @@ intents.guilds = True
 intents.reactions = True
 
 
-Khufra = commands.Bot(command_prefix='?', intents=intents)
+logging.basicConfig(filename="Khufra.log", level=logging.DEBUG)
+Khufra = commands.Bot(command_prefix='?',
+                      intents=intents)
 
 
 async def error(interaction: discord.Interaction, e: Exception):
