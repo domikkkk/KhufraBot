@@ -10,4 +10,4 @@ typedef struct {
 } miotly;
 
 int compare_time(const void *a, const void *b);
-miotly *czasy(island *is, int n, island dest);
+miotly *czasy(island *isl, int n, island dest);

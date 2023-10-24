@@ -121,5 +121,4 @@ def read_file(filename: str):
         i += 1
 
 
-print(calc(81, 9, 27, 1, 37))
-# read_file('./Ikariam/wyspy.csv')
+read_file('./Ikariam/wyspy.csv')
