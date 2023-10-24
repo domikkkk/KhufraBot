@@ -18,16 +18,21 @@ def get_data():
 
 class Excel:
     def __init__(self) -> None:
+        self.update()
+
+    def update(self):
         self.sheet = get_data()
         keys = list(self.sheet.keys())
         self.ours = keys[3:6]
         self.theirs = keys[0:3]
         self.attention = keys[6]
         self.clear_from_nan()
+        return
 
     def clear_from_nan(self):
         for key in self.theirs + self.ours:
             self.sheet[key] = np.array([name for name in self.sheet[key] if str(name) != 'nan'])
+        return
 
     def get_rg_keepers(self):
         names = []
