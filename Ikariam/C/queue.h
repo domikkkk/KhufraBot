@@ -2,6 +2,7 @@
 
 
 #define M 30
+#define E_M 1
 
 
 typedef struct {
@@ -11,4 +12,4 @@ typedef struct {
 
 int compare_time(const void *a, const void *b);
 miotly *czasy(island *isl, int n, island dest);
-island *ciag(miotly *m, int n);
+int ciag(miotly *m, int n);

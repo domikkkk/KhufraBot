@@ -18,16 +18,24 @@ miotly *czasy(island *isl, int n, island dest) {
         m[i].t = distance(isl[i], dest) * M;
     }
     qsort(m, n, sizeof(miotly), compare_time);
+    int x = ciag(m, n);
+    printf("%d\n", x);
     return m;
 }
 
 
-island *ciag(miotly *m, int n) {
+int ciag(miotly *m, int n) {
+    int max_n = 0;
     for (int i=0; i<n; i++) {
-        int max_n = 0;
+        int _n = 0;
         for (int j=0; j<n; i++) {
-            int odl = fabs(m[j].t - m[i].t) / M;
-            // if ()
+            float odl = fabs(m[j].t - m[i].t);
+            int nn = odl / M;
+            if (odl <= nn * M + E_M && odl >= nn * M - E_M) {
+                _n++;
+            }
         }
+        max_n = fmax(_n, max_n);
     }
+    return max_n;
 }
