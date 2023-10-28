@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from Common import TOKEN, ME
-from Ikariam.Islands import calc
+from Ikariam.Islands import calc, Wyspy
 from Jap.keyboard import parse_foreach
 import time
 import datetime
@@ -11,6 +11,7 @@ from Ikariam.Podkupowacz import Podkupowacz
 from Ikariam.Podkupowacz.Podkupowacz import LOGINHASLO, LOGINHASLOZAJMOWACZY
 from KhufraCommand import has_role
 import logging
+import json
 
 
 intents = discord.Intents().default()
@@ -50,7 +51,9 @@ async def on_ready():
     guilds = Khufra.guilds
     print(guilds)
     global e
+    global w
     e = Podkupowacz.Excel()
+    w = Wyspy()
     guilds = Khufra.guilds
     guild = next((g for g in guilds if g.name == "Stare D-S"), None)
 
@@ -184,6 +187,18 @@ async def podkupowacz(interaction: discord.Interaction, enemy_name: str):
     global e
     res = e.describe(enemy_name)
     await interaction.response.send_message(res)
+
+
+@Khufra.tree.command(description="Wyznacza wyspy do miotłowania")
+@app_commands.describe(x='Kordynat x', y='Kordynat y')
+async def wyspy(interaction: discord.Interaction, x: int, y: int):
+    global w
+    try:
+        res = w.find(x, y)
+        res = json.dumps(res, indent=4, ensure_ascii=False)
+        await interaction.response.send_message(f"```json\n{res}\n```")
+    except Exception as ee:
+        await error(interaction, ee)
 
 
 Khufra.run(TOKEN)

@@ -96,12 +96,15 @@ class Wyspy:
         if len(args) < 2:
             raise Exception("Za mało argumentów")
         arg = [int(s) for s in args]
+        for arr in arg:
+            if arr < 0:
+                raise Exception("Nie mogą być ujemne")
         response = czasy(self.islands_p, self.n, island(arg[0], arg[1]))
         a = response.m
         res = {}
         i = 0
         while i < response.n:
-            res[(a[i].i[0].x, a[i].i[0].y)] = a[i].t
+            res[f"[{a[i].i[0].x} {a[i].i[0].y}]"] = round(a[i].t, 2)
             i += 1
         return res
         
@@ -135,6 +138,9 @@ def calc(*args):
     if len(args) < 5:
         raise Exception("Za mało argumentów")
     arg = [int(s) for s in args]
+    for arr in arg:
+        if arr < 0:
+            raise Exception("Nie mogą być ujemne")
     a = find(island(arg[0], arg[1]), calc_time(arg[2], arg[3], arg[4]))
     bonus = Bonus()
     a = bonus.parse(a)
@@ -148,7 +154,3 @@ def read_file(filename: str):
         for line in reader:
             islands.append(island(int(line[0]), int(line[1])))
         return islands
-
-
-x = Wyspy()
-print(x.find(18, 47))
