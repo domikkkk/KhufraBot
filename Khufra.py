@@ -91,37 +91,17 @@ async def find(interaction: discord.Interaction, x: int, y: int, h: int,
         await error(interaction, e)
 
 
-@Khufra.tree.command(description="Przewiduje koszty 1 walki w określonym\
-    czasie")
-@app_commands.describe(dni='Ile dni?', lv='Poziom Żeglugi', czy_24='Czy\
-    preferowany składy 24h. 12h w przeciwnym wypadku?', nu_siebie='Czy\
-        walka jest poza swoim portem?')
-async def cost(interaction: discord.Interaction, dni: int, lv: int,
-               czy_24: bool, nu_siebie: bool):
-    try:
-        cost = estimate_nD(d=dni, lv=lv, czy_24=czy_24, nu_siebie=nu_siebie)
-        czy_24 = 'preferowane składy na {}h'.format(24 if czy_24 else 12)
-        nu_siebie = '{} mi{}'.format('po za' if nu_siebie else 'u siebie w',
-                                     'astem' if nu_siebie else 'eście')
-        res = f'# Przypuszczalny koszt przy następujących parametrach:\n*\
-            poziom żeglugi {lv},\n* na {dni} dni,\n* {czy_24},\n*\
-                {nu_siebie},\nto: {cost} złota'
-        await interaction.response.send_message(res)
-    except Exception as e:
-        await error(interaction, e)
-
-
-@Khufra.tree.command(description="Wyznacza skład na podany czas z zapasem na\
-    około 1h")
-@app_commands.describe(t='Na ile h flota?', lv='Poziom przyszłości żeglugi?')
-async def ships(interaction: discord.Interaction, t: int, lv: int = 0):
-    try:
-        fleet = Composition(t)
-        upkeep = upkeep_h(fleet, lv)
-        content = f'{fleet}\n Koszt utrzymania na 1h: {upkeep}'
-        await interaction.response.send_message(content)
-    except Exception as e:
-        await error(interaction, e)
+# @Khufra.tree.command(description="Wyznacza skład na podany czas z zapasem na\
+#     około 1h")
+# @app_commands.describe(t='Na ile h flota?', lv='Poziom przyszłości żeglugi?')
+# async def ships(interaction: discord.Interaction, t: int, lv: int = 0):
+#     try:
+#         fleet = Composition(t)
+#         upkeep = upkeep_h(fleet, lv)
+#         content = f'{fleet}\n Koszt utrzymania na 1h: {upkeep}'
+#         await interaction.response.send_message(content)
+#     except Exception as e:
+#         await error(interaction, e)
 
 
 @Khufra.tree.command(description="Discordowy licznik")

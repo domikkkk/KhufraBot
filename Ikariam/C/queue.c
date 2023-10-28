@@ -1,6 +1,7 @@
 #include "queue.h"
 #include <malloc.h>
 #include <stdlib.h>
+#include <math.h>
 
 
 int compare_time(const void *a, const void *b){
@@ -18,4 +19,15 @@ miotly *czasy(island *isl, int n, island dest) {
     }
     qsort(m, n, sizeof(miotly), compare_time);
     return m;
+}
+
+
+island *ciag(miotly *m, int n) {
+    for (int i=0; i<n; i++) {
+        int max_n = 0;
+        for (int j=0; j<n; i++) {
+            int odl = fabs(m[j].t - m[i].t) / M;
+            // if ()
+        }
+    }
 }
