@@ -18,6 +18,12 @@ class miotly(ctypes.Structure):
         ('t', ctypes.c_float)
     ]
 
+class pair(ctypes.Structure):
+    _fields_ = [
+        ('m', ctypes.POINTER(miotly)),
+        ('n', ctypes.c_int)
+    ]
+
 
 class Bonus:
     def __init__(self) -> None:
@@ -71,6 +77,35 @@ class Bonus:
         return self.result
 
 
+class Wyspy:
+    def __init__(self) -> None:
+        self.islands = read_file("./Ikariam/wyspy.csv")
+        self.update()
+
+    def update(self):
+        self.n = len(self.islands)
+        self.islands_p = (island * self.n)(*self.islands)
+        return
+
+    def add(self, isl: island):
+        self.islands.append(isl)
+        self.update()
+        return
+
+    def find(self, *args):
+        if len(args) < 2:
+            raise Exception("Za mało argumentów")
+        arg = [int(s) for s in args]
+        response = czasy(self.islands_p, self.n, island(arg[0], arg[1]))
+        a = response.m
+        res = {}
+        i = 0
+        while i < response.n:
+            res[(a[i].i[0].x, a[i].i[0].y)] = a[i].t
+            i += 1
+        return res
+        
+
 c.distance.argtypes = (island, island)
 c.distance.restype = ctypes.c_float
 
@@ -84,7 +119,7 @@ c.find.argtypes = (island, ctypes.c_float)
 c.find.restype = ctypes.POINTER(island)
 
 c.czasy.argtypes = (ctypes.POINTER(island), ctypes.c_int, island)
-c.czasy.restype = ctypes.POINTER(miotly)
+c.czasy.restype = pair
 
 
 # c.queue.argtypes = (ctypes.POINTER(island))
@@ -112,14 +147,8 @@ def read_file(filename: str):
         islands = []
         for line in reader:
             islands.append(island(int(line[0]), int(line[1])))
-        n = len(islands)
-        islands_a = (island * n)(*islands)
-        a = czasy(islands_a, n, island(18, 47))
-    i = 0
-    while i < n:
-        print(a[i].i[0].x, a[i].i[0].y, a[i].t)
-        i += 1
+        return islands
 
 
-# print(calc(81, 9, 27, 1, 37))
-# read_file('./Ikariam/wyspy.csv')
+x = Wyspy()
+print(x.find(18, 47))
