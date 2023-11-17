@@ -27,6 +27,7 @@ class Excel:
         self.theirs = keys[0:3]
         self.attention = keys[6]
         self.clear_from_nan()
+        self.null_ally = ['\t  =>  Nie', 'ma nic', 'blisko. Trzeba skoczyć']
         return
 
     def clear_from_nan(self):
@@ -50,6 +51,9 @@ class Excel:
             if podciąg(enemy_rg_name, name) / max(len(name),
                                                   len(enemy_rg_name)) > 0.7:
                 allies = self.find_allies(cords)
+                if allies == []:
+                    res.append([name, city_name, cords] + self.null_ally)
+                    continue
                 for ally in allies:
                     res.append([name, city_name, cords] + ally)
         return res
@@ -70,19 +74,25 @@ class Excel:
         all = self.find_seller(enemy_rg_name)
         if not all:
             return 'Brak danych o tej skarbonce'
-        res = ""
+        ret = []
         for i in all:
-            dist = distance(i[2], i[5])
-            t_time = round(dist * CZAS_PLYNIECIA)
-            min_time, s_time = t_time // 60, t_time % 60
-            res += f"{' '.join(i[:3]):<32} =>  Loguj {' '.join(i[3:]):<35}"
-            res += f"\t  Śmig: {min_time if min_time != 0 else 10}min"
-            res += '\t' if s_time == 0 else f" {s_time}s"
-            t_time = round(dist * CZAS_PLYNIECIA * 3 / 5)
-            min_time, s_time = t_time // 60, t_time % 60
-            res += f"  Handlowy: {min_time if min_time != 0 else 6}min"
-            res += '\n' if s_time == 0 else f" {s_time}s\n"
-        return res[:-1]
+            try:
+                res = []
+                dist = distance(i[2], i[5])
+                t_time = round(dist * CZAS_PLYNIECIA)
+                min_time, s_time = t_time // 60, t_time % 60
+                res.append(f"{' '.join(i[:3]):<32} =>  Loguj {' '.join(i[3:]):<35}")
+                res.append(f"\t  Śmig: {min_time if min_time != 0 else 10}min")
+                res.append('\t' if s_time == 0 else f" {s_time}s")
+                t_time = round(dist * CZAS_PLYNIECIA * 3 / 5)
+                min_time, s_time = t_time // 60, t_time % 60
+                res.append(f"  Handlowy: {min_time if min_time != 0 else 6}min")
+                res.append('\n' if s_time == 0 else f" {s_time}s\n")
+                ret.append(res)
+            except Exception:
+                ret.append(i)
+        ret = sorted(ret, key=lambda x: x[-2])
+        return ''.join([' '.join(i) for i in ret])
 
 
 def distance(isl1: str, isl2: str):
@@ -108,3 +118,4 @@ def podciąg(s1: str, s2: str):
 
 
 # e = Excel()
+# print(e.describe("vandall"))

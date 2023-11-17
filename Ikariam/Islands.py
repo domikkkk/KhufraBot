@@ -1,7 +1,7 @@
 import ctypes
 import csv
 
-
+global c
 c = ctypes.CDLL('./Ikariam/C/ika.so')
 
 
@@ -23,6 +23,11 @@ class pair(ctypes.Structure):
         ('m', ctypes.POINTER(miotly)),
         ('n', ctypes.c_int)
     ]
+
+
+def update_c():
+    global c
+    c = ctypes.CDLL('./Ikariam/C/ika.so')
 
 
 class Bonus:
@@ -104,7 +109,8 @@ class Wyspy:
         res = {}
         i = 0
         while i < response.n:
-            res[f"[{a[i].i[0].x} {a[i].i[0].y}]"] = round(a[i].t, 2)
+            t_time = round(a[i].t, 2)
+            res[f"[{a[i].i[0].x} {a[i].i[0].y}]"] = f"{int(t_time//60)}h {int(t_time%60)}min"
             i += 1
         return res
         

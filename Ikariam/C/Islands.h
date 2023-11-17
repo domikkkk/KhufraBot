@@ -1,5 +1,5 @@
 #define DIST 20.0
-#define EPSI 0.02
+#define EPSI 0.03
 #define N 25
 
 typedef struct {
