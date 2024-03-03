@@ -5,13 +5,15 @@ from Common import TOKEN, ME
 from Ikariam.Islands import calc, Wyspy
 from Jap.keyboard import parse_foreach
 import time
-import datetime
-# from Ikariam.Koszty import Composition, estimate_nD, upkeep_h
+from datetime import datetime
+from Ikariam.Koszty import Composition, upkeep_h
 from Ikariam.Podkupowacz import Podkupowacz
 from Ikariam.Podkupowacz.Podkupowacz import LOGINHASLO, LOGINHASLOZAJMOWACZY
 from KhufraCommand import has_role
-import logging
+# import logging
 import json
+from mlbb.heroes import read, read_heroes, podciag
+import asyncio
 
 
 intents = discord.Intents().default()
@@ -21,7 +23,7 @@ intents.guilds = True
 intents.reactions = True
 
 
-logging.basicConfig(filename="Khufra.log", level=logging.DEBUG)
+# logging.basicConfig(filename="Khufra.log", level=logging.DEBUG, format='%(levelname)s - %(asctime)s - %(message)s')
 Khufra = commands.Bot(command_prefix='?',
                       intents=intents)
 
@@ -41,21 +43,20 @@ async def error(interaction: discord.Interaction, e: Exception):
     function = interaction.command.name
     await member.send(f'Osoba {person} na kanale {canal}\
         miała problem z funkcją\
-    {function} o godzinie {datetime.datetime.now()}:\n{e}')
+    {function} o godzinie {datetime.now()}:\n{e}')
 
 
 @Khufra.event
 async def on_ready():
     synced = await Khufra.tree.sync()
-    print(len(synced))
     guilds = Khufra.guilds
-    print(guilds)
     global e
     global w
     e = Podkupowacz.Excel()
     w = Wyspy()
     guilds = Khufra.guilds
     guild = next((g for g in guilds if g.name == "Stare D-S"), None)
+    Khufra.loop.create_task(update_per_day())
 
 
 @Khufra.event
@@ -77,10 +78,6 @@ async def on_message(mes: discord.Message):
                                                         len(rg_name)) > 0.75:
                 await mes.channel.send(e.describe(name))
                 return
-    # if mes.author.id == 687957649635147888 and mes.content == 'test':
-    #     user = await Khufra.fetch_user(269481968461283328)
-    #     await user.send(LOGINHASLO)
-    #     await user.send(LOGINHASLOZAJMOWACZY)
     return
 
 
@@ -128,17 +125,17 @@ async def update(interaction: discord.Interaction):
         await error(interaction, ee)
 
 
-# @Khufra.tree.command(description="Wyznacza skład na podany czas z zapasem na\
-#     około 1h")
-# @app_commands.describe(t='Na ile h flota?', lv='Poziom przyszłości żeglugi?')
-# async def ships(interaction: discord.Interaction, t: int, lv: int = 0):
-#     try:
-#         fleet = Composition(t)
-#         upkeep = upkeep_h(fleet, lv)
-#         content = f'{fleet}\n Koszt utrzymania na 1h: {upkeep}'
-#         await interaction.response.send_message(content)
-#     except Exception as e:
-#         await error(interaction, e)
+@Khufra.tree.command(description="Wyznacza skład na podany czas z zapasem na\
+    około 1h")
+@app_commands.describe(t='Na ile h flota?', lv='Poziom przyszłości żeglugi?')
+async def ships(interaction: discord.Interaction, t: int, lv: int = 0):
+    try:
+        fleet = Composition(t)
+        upkeep = upkeep_h(fleet, lv)
+        content = f'{fleet}\n Koszt utrzymania na 1h: {upkeep}'
+        await interaction.response.send_message(content)
+    except Exception as e:
+        await error(interaction, e)
 
 
 @Khufra.tree.command(description="Discordowy licznik")
@@ -199,6 +196,26 @@ async def wyspy(interaction: discord.Interaction, x: int, y: int):
         await interaction.response.send_message(f"```json\n{res}\n```")
     except Exception as ee:
         await error(interaction, ee)
+
+
+@Khufra.tree.command()
+@app_commands.describe(heroname='Nazwa Bohatera')
+async def hero_info(interaction: discord.Interaction, heroname: str):
+    herodata: list[dict] = read()
+    hero = next((hero for hero in herodata
+                if podciag(hero['name'], heroname)/max(len(hero['name']), len(heroname)) > 0.8), None)
+    res = json.dumps(hero, indent=4, ensure_ascii=False)
+    await interaction.response.send_message(f"```json\n{res}\n```")
+
+
+async def update_per_day():
+    await Khufra.wait_until_ready()
+    while not Khufra.is_closed():
+        hour = datetime.utcnow().hour
+        if hour == 15:
+            read_heroes()
+            read_heroes(True)
+        await asyncio.sleep(60 * 60)
 
 
 Khufra.run(TOKEN)
