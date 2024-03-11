@@ -10,7 +10,7 @@ from Ikariam.Koszty import Composition, upkeep_h
 from Ikariam.Podkupowacz import Podkupowacz
 from Ikariam.Podkupowacz.Podkupowacz import LOGINHASLO, LOGINHASLOZAJMOWACZY
 import json
-from mlbb.heroes import read, read_heroes, podciag
+from mlbb.heroes import get_build, get_heroes, Heroes, Items
 import asyncio
 
 
@@ -47,13 +47,14 @@ async def error(interaction: discord.Interaction, e: Exception):
 @Khufra.event
 async def on_ready():
     synced = await Khufra.tree.sync()
+    print(len(synced))
     guilds = Khufra.guilds
     global e
     global w
     e = Podkupowacz.Excel()
     w = Wyspy()
-    guilds = Khufra.guilds
-    guild = next((g for g in guilds if g.name == "Stare D-S"), None)
+    # guilds = Khufra.guilds
+    # guild = next((g for g in guilds if g.name == "Stare D-S"), None)
     Khufra.loop.create_task(update_per_day())
 
 
@@ -146,6 +147,10 @@ async def timer(interaction: discord.Interaction, t: int = 0):
 @Khufra.tree.command(description="Oblicza limit garnizonu lądowego")
 @app_commands.describe(t="Poziom ratusza", w="Poziom muru")
 async def lad(interaction: discord.Interaction, t: int, w: int):
+    if t < 1 or w < 0:
+        await interaction.response.send_message("Poziom ratusza nie może być mniejszy\
+ od 1, zaś muru od 0", ephemeral=True)
+        return
     land = 250 + (t + w) * 50
     await interaction.response.send_message(land)
 
@@ -153,6 +158,10 @@ async def lad(interaction: discord.Interaction, t: int, w: int):
 @Khufra.tree.command(description="Oblicza limit garnizonu morskiego")
 @app_commands.describe(m="Wyższy poziom stoczni lub portu")
 async def mor(interaction: discord.Interaction, m: int):
+    if m < 1:
+        await interaction.response.send_message("Poziom nie może być mniejszy\
+ od 1", ephemeral=True)
+        return
     sea = 125 + m * 25
     await interaction.response.send_message(sea)
 
@@ -163,7 +172,8 @@ async def mor(interaction: discord.Interaction, m: int):
 async def a_p(interaction: discord.Interaction, r: int):
     if r < 1:
         await interaction.response.send_message("Poziom nie może być mniejszy\
-            od 1", ephemeral=True)
+ od 1", ephemeral=True)
+        return
     p = 3 + r // 4
     await interaction.response.send_message(f"{p} / {p-2}")
 
@@ -199,11 +209,23 @@ async def wyspy(interaction: discord.Interaction, x: int, y: int):
 @Khufra.tree.command()
 @app_commands.describe(heroname='Nazwa Bohatera')
 async def hero_info(interaction: discord.Interaction, heroname: str):
-    herodata: list[dict] = read()
-    hero = next((hero for hero in herodata
-                if podciag(hero['name'], heroname)/max(len(hero['name']), len(heroname)) > 0.8), None)
-    res = json.dumps(hero, indent=4, ensure_ascii=False)
-    await interaction.response.send_message(f"```json\n{res}\n```")
+    heroes = Heroes()
+    res = heroes.find(heroname)
+    # await interaction.response.send_message(f"```json\n{res}\n```")
+    embed = heroes.get_info()
+    # await interaction.response.send_message(file=discord.File(image, 'obraz.png'))
+    await interaction.response.send_message(embed=embed)
+
+
+@Khufra.tree.command()
+@app_commands.describe(itemname='Nazwa itemu')
+async def item_info(interaction: discord.Interaction, itemname: str):
+    items = Items()
+    res = items.find(itemname)
+    # await interaction.response.send_message(f"```json\n{res}\n```")
+    embed = items.get_info()
+    # await interaction.response.send_message(file=discord.File(image, 'obraz.png'))
+    await interaction.response.send_message(embed=embed)
 
 
 async def update_per_day():
@@ -211,6 +233,7 @@ async def update_per_day():
     while not Khufra.is_closed():
         hour = datetime.utcnow().hour
         if hour == 15:
-            read_heroes()
-            read_heroes(True)
+            get_heroes()
+            get_heroes(True)
+            get_build()
         await asyncio.sleep(60 * 60)
