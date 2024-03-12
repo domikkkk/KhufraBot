@@ -1,4 +1,3 @@
-from tkinter import image_names
 import requests
 import json
 import numpy as np
