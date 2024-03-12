@@ -211,10 +211,11 @@ async def wyspy(interaction: discord.Interaction, x: int, y: int):
 async def hero_info(interaction: discord.Interaction, heroname: str):
     heroes = Heroes()
     res = heroes.find(heroname)
-    # await interaction.response.send_message(f"```json\n{res}\n```")
-    embed = heroes.get_info()
-    # await interaction.response.send_message(file=discord.File(image, 'obraz.png'))
-    await interaction.response.send_message(embed=embed)
+    embeds = heroes.get_info()
+    if embeds:
+        await interaction.response.send_message(embeds=embeds)
+    else:
+        await interaction.response.send_message("Nie znaleziono podanego bohatera")
 
 
 @Khufra.tree.command()
@@ -222,10 +223,11 @@ async def hero_info(interaction: discord.Interaction, heroname: str):
 async def item_info(interaction: discord.Interaction, itemname: str):
     items = Items()
     res = items.find(itemname)
-    # await interaction.response.send_message(f"```json\n{res}\n```")
     embed = items.get_info()
-    # await interaction.response.send_message(file=discord.File(image, 'obraz.png'))
-    await interaction.response.send_message(embed=embed)
+    if embed:
+        await interaction.response.send_message(embed=embed)
+    else:
+        await interaction.response.send_message("Nie znaleziono podanego itemu")
 
 
 async def update_per_day():

@@ -1,3 +1,4 @@
+from tkinter import image_names
 import requests
 import json
 import numpy as np
@@ -22,6 +23,8 @@ def get_item_image(name: str):
 
 
 def delete_tags(text: str):
+    if not text:
+        return
     pattern = re.compile(r'<.*?>')
     return re.sub(pattern, '', text)
 
@@ -42,10 +45,12 @@ class Object:
 
 class X:
     def __init__(self, data: dict):
+        if not data:
+            return
         self.name = data.get('name')
         self.lanes = [i for i in lanes if data.get(i) is not None and data.get(i) is True]
         self.tier = data.get('tier')
-        self.description = data.get('description')
+        self.description = delete_tags(data.get('description'))
         self.stats = data.get('stats')
         self.role = data.get('role')
         self.pick_rate = data.get('pick_rate')
@@ -56,12 +61,26 @@ class Skill:
         self.name = data.get('name')
         self.description = delete_tags(data.get('description'))
         self.mana = data.get('mana_cost')
-        self.cd = data.get('cooldown')
+        self.cd = data.get('cooldown') / 1000
         self.is_passive = data.get('is_passive')
         self.image = data.get('icon_url')
 
+    def desc(self):
+        text = f'mana: {self.mana}, cooldown: {self.cd}'
+        return text
+
+    def make_embed(self):
+        embed = discord.Embed(title=self.name, description=self.description, color=0x00b3ff)
+        embed.set_thumbnail(url=self.image)
+        if self.is_passive:
+            embed.set_footer(text='Passive')
+        else:
+            embed.set_footer(text=self.desc())
+        return embed
+
 
 class Heroes(Object):
+    
     def __init__(self) -> None:
         data = read_heroes()
         for hero in data:
@@ -78,14 +97,17 @@ class Heroes(Object):
             return io.BytesIO(requests.get(self.hero['image_link']).content)
 
     def get_info(self):
+        if not self.hero:
+            return
         embed = discord.Embed(title=self.x.name, color=0x00b3ff)
-        embed.set_thumbnail(url=self.hero['image_link'])
+        embed.set_image(url=self.hero['image_link'])
+        embeds = [embed]
         x = requests.get(link_build(self.hero.get('id', 0))).json()
         skills = x['pageProps']['data']['heroSkillsData']
         for skill in skills:
             s = Skill(skill)
-            embed.add_field(name=s.name, value=s.description)
-        return embed
+            embeds.append(s.make_embed())
+        return embeds
 
 
 class Items(Object):
@@ -98,11 +120,13 @@ class Items(Object):
         return self.item
 
     def get_image(self):
-        if self.item:
-            return io.BytesIO(requests.get(get_item_image(self.item['name'])).content)
+        if self.x:
+            return io.BytesIO(requests.get(get_item_image(self.x.name)).content)
 
     def get_info(self):
-        embed = discord.Embed(title=self.x.name)
+        if not self.item:
+            return
+        embed = discord.Embed(title=self.x.name, description=self.x.description + '\n' + self.x.stats, color=0xff0a0e)
         embed.set_image(url=get_item_image(self.x.name))
         return embed
 
