@@ -144,26 +144,36 @@ async def timer(interaction: discord.Interaction, t: int = 0):
     await interaction.response.send_message(f"<t:{utc}:R>")
 
 
-@Khufra.tree.command(description="Oblicza limit garnizonu lądowego")
-@app_commands.describe(t="Poziom ratusza", w="Poziom muru")
-async def lad(interaction: discord.Interaction, t: int, w: int):
-    if t < 1 or w < 0:
-        await interaction.response.send_message("Poziom ratusza nie może być mniejszy\
- od 1, zaś muru od 0", ephemeral=True)
+@Khufra.tree.command(description="Oblicza limit garnizonu lądowego lub morskiego")
+@app_commands.describe(land="Czy garnizon lądowy?", args="Dla lądowego poziom ratusza i muru,\
+    dla morskiego max poziomu budynków morskich")
+@app_commands.choices(land=[
+    app_commands.Choice(name=True, value=True),
+    app_commands.Choice(name=False, value=False),
+])
+async def garrison(interaction: discord.Interaction, land: app_commands.Choice[int], args: str):
+    args = [int(x) for x in args.split()]
+    if land.value:
+        if len(args) != 2:
+            await interaction.response.send_message("Podaj poziom ratusza i muru.")
+            return
+        if args[0] < 1 or args[1] < 0:
+            await interaction.response.send_message("Poziom ratusza nie może być mniejszy\
+    od 1, zaś muru od 0", ephemeral=True)
+            return
+        land = 250 + sum(args) * 50
+        await interaction.response.send_message(land)
         return
-    land = 250 + (t + w) * 50
-    await interaction.response.send_message(land)
-
-
-@Khufra.tree.command(description="Oblicza limit garnizonu morskiego")
-@app_commands.describe(m="Wyższy poziom stoczni lub portu")
-async def mor(interaction: discord.Interaction, m: int):
-    if m < 1:
-        await interaction.response.send_message("Poziom nie może być mniejszy\
- od 1", ephemeral=True)
-        return
-    sea = 125 + m * 25
-    await interaction.response.send_message(sea)
+    else:
+        if len(args) != 1:
+            await interaction.response.send_message("Podaj wyższy poziom budynku morskiego.")
+            return
+        if args[0] < 1:
+            await interaction.response.send_message("Poziom nie może być mniejszy\
+    od 1", ephemeral=True)
+            return
+        sea = 125 + args[0] * 25
+        await interaction.response.send_message(sea)
 
 
 @Khufra.tree.command(description="Wyznacza ilość punktów akcji dla podanego\
