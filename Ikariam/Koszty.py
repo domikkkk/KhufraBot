@@ -9,8 +9,8 @@ class Composition():
     def __init__(self, t: float) -> None:
         self.comp = {
             Steam(): 100 + 15 * t * 4,
-            Carrier(): 7 + 2 * t * 4,
-            Ram(): 150 + 18 * t * 4,
+            Carrier(): 11 + 2 * t * 4,
+            Ram(): 90 + 18 * t * 4,
             Rocket(): 30 + 11 * 2 * t,
             Mortar(): 42 * ceil(4 * t / 5),
             Paddle(): 30 * ceil(4 * t / 5),

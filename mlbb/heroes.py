@@ -7,13 +7,18 @@ import re
 from random import randint
 
 
-link = 'https://www.mlbb.ninja/_next/data/vH0BTjpFf0HJFczSlWOll'
-link_build = lambda id: f'{link}/heroes/{id}.json?id={id}'
+class Const:
+    token = ""
+    link = 'https://www.mlbb.ninja/_next/data/{}'
 get_color = lambda: randint(0, 0xffffff)%(0xffffff+1)
 TIERS = ['D', 'C', 'B', 'A', 'S', 'SS']
 LANES = ['is_gold', 'is_exp', 'is_jungle', 'is_roam', 'is_mid']
 ROLES = ['Marksman', 'Mage', 'Support', 'Fighter', 'Tank', 'Assassin']
 
+
+def link_build(id):
+    link = Const.link.format(Const.token)
+    return f'{link}/heroes/{id}.json?id={id}'
 
 
 def get_item_image(name: str):
@@ -25,6 +30,12 @@ def get_item_image(name: str):
         item += args[i] + '%20'
     item += args[-1]
     return image_link.format(item)
+
+
+def get_new_token():
+    x = requests.get("https://www.mlbb.ninja/").text
+    new_token = re.findall(r'/_next/static/(.*?)/', x)[-1]
+    Const.token = new_token
 
 
 def delete_tags(text: str):
@@ -106,7 +117,11 @@ class Heroes(Object):
         embed = discord.Embed(title=self.x.name, color=get_color())
         embed.set_image(url=self.hero['image_link'])
         embeds = [embed]
-        x = requests.get(link_build(self.hero.get('id', 0))).json()
+        try:
+            x = requests.get(link_build(self.hero.get('id', 0))).json()
+        except Exception:
+            get_new_token()
+            x = requests.get(link_build(self.hero.get('id', 0))).json()
         skills = x['pageProps']['data']['heroSkillsData']
         for skill in skills:
             s = Skill(skill)
@@ -161,7 +176,11 @@ class Items(Object):
 
 def get_build():
     items: list[dict] = []
-    x = requests.get(link_build(1)).json()
+    try:
+        x = requests.get(link_build(1)).json()
+    except Exception:
+        get_new_token()
+        x = requests.get(link_build(1)).json()
     y =  x['pageProps']['data']
     for item in y['itemDetails']:
         items.append(item)
@@ -170,7 +189,11 @@ def get_build():
 
 
 def get_heroes(update=False):
-    x = requests.get(link).json()
+    try:
+        x = requests.get(Const.link).json()
+    except Exception:
+        get_new_token()
+        x = requests.get(Const.link).json()
     typ, id = Filtr[update]
     data = x['pageProps'][typ]
     data = sorted(data, key=lambda x: x[id])
@@ -217,4 +240,11 @@ def podciag(s1: str, s2: str):
 
 
 if __name__ == "__main__":
-    pass
+    # h = Heroes()
+    # h.find('Clint')
+    # x = requests.get(link_build(h.hero.get('id', 0)))
+    # print(x)
+    print(Const.token)
+    get_new_token()
+    print(Const.token)
+    
