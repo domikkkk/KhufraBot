@@ -11,6 +11,7 @@ from Ikariam.Podkupowacz import Podkupowacz
 from Ikariam.Podkupowacz.Podkupowacz import LOGINHASLO, LOGINHASLOZAJMOWACZY
 import json
 from mlbb.heroes import get_build, get_heroes, Heroes, Items
+from mlbb.heroes import LANES, ROLES, TIERS
 import asyncio
 
 
@@ -240,10 +241,57 @@ async def item_info(interaction: discord.Interaction, itemname: str):
         await interaction.response.send_message("Nie znaleziono podanego itemu")
 
 
+@Khufra.tree.command()
+@app_commands.describe(lane="Podaj linie")
+@app_commands.choices(lane = [
+    app_commands.Choice(name=l[3:], value=l) for l in LANES
+])
+@app_commands.choices(role = [
+    app_commands.Choice(name=r, value=r) for r in ROLES
+])
+@app_commands.choices(tier = [
+    app_commands.Choice(name=t, value=t) for t in TIERS
+])
+async def heroes(interaction: discord.Interaction,
+                 lane: app_commands.Choice[str]=None,
+                 role: app_commands.Choice[str]=None,
+                 tier: app_commands.Choice[str]=None):
+    if lane is None and role is None and tier is None:
+        await interaction.response.send_message("Musisz wskazać co najmniej 1 rodzaj.")
+        return
+    if lane is None:
+        lane = app_commands.Choice(name='lane', value=None)
+    if role is None:
+        role = app_commands.Choice(name='role', value=None)
+    if tier is None:
+        tier = app_commands.Choice(name='tier', value=None)
+    filter = {
+        'lanes': lane.value,
+        'tier': tier.value,
+        'role': role.value
+    }
+    heroes = Heroes()
+    embeds:list[discord.Embed] = heroes.get_all(filter)
+    desc = ''
+    for key in filter:
+            if not filter[key]:
+                continue
+            else:
+                desc += f"\n- {filter[key]}"
+    for embed in embeds:
+        embed.description = desc[1:]
+    if embeds:
+        await interaction.response.send_message(embeds=embeds)
+    else:
+        mes = "Brak bohaterów spełniających podane warunki:"
+        mes += desc
+        await interaction.response.send_message(mes)
+
+
 async def update_per_day():
     await Khufra.wait_until_ready()
     while not Khufra.is_closed():
-        hour = datetime.utcnow().hour
+        hour = datetime.now().hour
         if hour == 15:
             get_heroes()
             get_heroes(True)

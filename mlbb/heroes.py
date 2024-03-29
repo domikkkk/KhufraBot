@@ -4,10 +4,16 @@ import numpy as np
 import discord
 import io
 import re
+from random import randint
 
 
 link = 'https://www.mlbb.ninja/_next/data/vH0BTjpFf0HJFczSlWOll'
 link_build = lambda id: f'{link}/heroes/{id}.json?id={id}'
+get_color = lambda: randint(0, 0xffffff)%(0xffffff+1)
+TIERS = ['D', 'C', 'B', 'A', 'S', 'SS']
+LANES = ['is_gold', 'is_exp', 'is_jungle', 'is_roam', 'is_mid']
+ROLES = ['Marksman', 'Mage', 'Support', 'Fighter', 'Tank', 'Assassin']
+
 
 
 def get_item_image(name: str):
@@ -17,7 +23,7 @@ def get_item_image(name: str):
     length = len(args)
     for i in range(length-1):
         item += args[i] + '%20'
-    item += args[length - 1]
+    item += args[-1]
     return image_link.format(item)
 
 
@@ -28,12 +34,10 @@ def delete_tags(text: str):
     return re.sub(pattern, '', text)
 
 
-filtr = {
+Filtr = {
     False: ('heroData', 'id'),
     True: ('updateData', 'hero_id'),
 }
-
-lanes = ['is_gold', 'is_exp', 'is_jungle', 'is_roam', 'is_mid']
 
 
 class Object:
@@ -47,7 +51,7 @@ class X:
         if not data:
             return
         self.name = data.get('name')
-        self.lanes = [i for i in lanes if data.get(i) is not None and data.get(i) is True]
+        self.lanes = [i for i in LANES if data.get(i) is not None and data.get(i) is True]
         self.tier = data.get('tier')
         self.description = delete_tags(data.get('description'))
         self.stats = data.get('stats')
@@ -69,7 +73,7 @@ class Skill:
         return text
 
     def make_embed(self):
-        embed = discord.Embed(title=self.name, description=self.description, color=0x00b3ff)
+        embed = discord.Embed(title=self.name, description=self.description, color=get_color())
         embed.set_thumbnail(url=self.image)
         if self.is_passive:
             embed.set_footer(text='Passive')
@@ -79,12 +83,13 @@ class Skill:
 
 
 class Heroes(Object):
-    
     def __init__(self) -> None:
         data = read_heroes()
         for hero in data:
             hero['image_link'] = hero['image_link'].strip()
         self.herodata = data
+        self.hero = None
+        self.x = None
 
     def find(self, heroname: str):
         self.hero = super().find(self.herodata, heroname)
@@ -98,7 +103,7 @@ class Heroes(Object):
     def get_info(self):
         if not self.hero:
             return
-        embed = discord.Embed(title=self.x.name, color=0x00b3ff)
+        embed = discord.Embed(title=self.x.name, color=get_color())
         embed.set_image(url=self.hero['image_link'])
         embeds = [embed]
         x = requests.get(link_build(self.hero.get('id', 0))).json()
@@ -106,12 +111,36 @@ class Heroes(Object):
         for skill in skills:
             s = Skill(skill)
             embeds.append(s.make_embed())
+        self.hero = None
+        self.x = None
+        return embeds
+
+    def get_all(self, filter:dict):
+        heroes: list[X] = [X(hero) for hero in self.herodata]
+        for key in filter:
+            value = filter[key]
+            if value is not None:
+                temp_list = []
+                for hero in heroes:
+                    if value in hero.__getattribute__(key):
+                        temp_list.append(hero)
+                heroes = temp_list[:]
+        x = 0
+        embeds = []
+        while x < len(heroes):
+            embed = discord.Embed(title='Heroes', color=get_color())
+            for hero in heroes[x:x+25]:
+                embed.add_field(name=hero.name, value="")
+            x += 25
+            embeds.append(embed)
         return embeds
 
 
 class Items(Object):
     def __init__(self) -> None:
         self.itemsdata: list[dict] = read_items()
+        self.item = None
+        self.x = None
 
     def find(self, itemname: str):
         self.item = super().find(self.itemsdata, itemname)
@@ -125,7 +154,7 @@ class Items(Object):
     def get_info(self):
         if not self.item:
             return
-        embed = discord.Embed(title=self.x.name, description=self.x.description + '\n' + self.x.stats, color=0xff0a0e)
+        embed = discord.Embed(title=self.x.name, description=self.x.description + '\n' + self.x.stats, color=get_color())
         embed.set_image(url=get_item_image(self.x.name))
         return embed
 
@@ -142,7 +171,7 @@ def get_build():
 
 def get_heroes(update=False):
     x = requests.get(link).json()
-    typ, id = filtr[update]
+    typ, id = Filtr[update]
     data = x['pageProps'][typ]
     data = sorted(data, key=lambda x: x[id])
     # if not update:
@@ -161,7 +190,7 @@ def read_items():
 
 
 def read_heroes(heroUpdate=False):
-    filename = f"mlbb/{filtr[heroUpdate][0]}.json"
+    filename = f"mlbb/{Filtr[heroUpdate][0]}.json"
     with open(filename, 'r') as f:
         data = json.load(f)
     return data
@@ -188,9 +217,4 @@ def podciag(s1: str, s2: str):
 
 
 if __name__ == "__main__":
-    H = Heroes()
-    I = Items()
-    # print(H.find('miya'))
-    # print(I.find('neckless of durance'))
-    # print(link_build(119))
-    get_heroes()
+    pass
