@@ -171,7 +171,21 @@ class Items(Object):
             return
         embed = discord.Embed(title=self.x.name, description=self.x.description + '\n' + self.x.stats, color=get_color())
         embed.set_image(url=get_item_image(self.x.name))
+        self.item = None
+        self.x = None
         return embed
+
+    def get_all(self):
+        items = [item.get("name") for item in self.itemsdata]
+        embeds = []
+        x = 0
+        while x < len(items):
+            embed = discord.Embed(title="Items", color=get_color())
+            for itemname in items[x:x+25]:
+                embed.add_field(name=itemname, value="")
+            embeds.append(embed)
+            x += 25
+        return embeds
 
 
 def get_build():

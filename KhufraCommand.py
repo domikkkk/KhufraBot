@@ -270,8 +270,8 @@ async def heroes(interaction: discord.Interaction,
         'tier': tier.value,
         'role': role.value
     }
-    heroes = Heroes()
-    embeds:list[discord.Embed] = heroes.get_all(filter)
+    H = Heroes()
+    embeds:list[discord.Embed] = H.get_all(filter)
     desc = ''
     for key in filter:
             if not filter[key]:
@@ -286,6 +286,16 @@ async def heroes(interaction: discord.Interaction,
         mes = "Brak bohaterów spełniających podane warunki:"
         mes += desc
         await interaction.response.send_message(mes)
+
+
+@Khufra.tree.command()
+async def items(interaction: discord.Interaction):
+    I = Items()
+    embeds = I.get_all()
+    if embeds:
+        await interaction.response.send_message(embeds=embeds)
+    else:
+        await interaction.response.send_message("Coś poszło nie tak ...")
 
 
 async def update_per_day():
