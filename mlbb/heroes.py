@@ -169,6 +169,10 @@ class Items(Object):
     def get_info(self):
         if not self.item:
             return
+        if not self.x.description:
+            self.x.description = ''
+        if not self.x.stats:
+            self.x.stats = ''
         embed = discord.Embed(title=self.x.name, description=self.x.description + '\n' + self.x.stats, color=get_color())
         embed.set_image(url=get_item_image(self.x.name))
         self.item = None
