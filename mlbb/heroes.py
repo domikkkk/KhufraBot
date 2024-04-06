@@ -64,8 +64,8 @@ class X:
         self.name = data.get('name')
         self.lanes = [i for i in LANES if data.get(i) is not None and data.get(i) is True]
         self.tier = data.get('tier')
-        self.description = delete_tags(data.get('description'))
-        self.stats = data.get('stats')
+        self.description = delete_tags(data.get('description', ''))
+        self.stats = data.get('stats', '')
         self.role = data.get('role')
         self.pick_rate = data.get('pick_rate')
 
@@ -169,10 +169,6 @@ class Items(Object):
     def get_info(self):
         if not self.item:
             return
-        if not self.x.description:
-            self.x.description = ''
-        if not self.x.stats:
-            self.x.stats = ''
         embed = discord.Embed(title=self.x.name, description=self.x.description + '\n' + self.x.stats, color=get_color())
         embed.set_image(url=get_item_image(self.x.name))
         self.item = None
