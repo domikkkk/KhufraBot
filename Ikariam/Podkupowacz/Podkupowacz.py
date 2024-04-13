@@ -3,8 +3,7 @@ import numpy as np
 import os
 
 
-LOGINHASLO = 'agrafia55@wp.plStefanek2020'
-LOGINHASLOZAJMOWACZY = 'kontawuja@interia.plKontaWujka1234'
+
 CZAS_PLYNIECIA = 1200  # %s = 20min
 
 

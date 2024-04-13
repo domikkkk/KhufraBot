@@ -1,14 +1,13 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from Common import ME
+from Common import ME, LOGINHASLO, LOGINHASLOZAJMOWACZY
 from Ikariam.Islands import calc, Wyspy
 from Jap.keyboard import parse_foreach
 import time
 from datetime import datetime
 from Ikariam.Koszty import Composition, upkeep_h
 from Ikariam.Podkupowacz import Podkupowacz
-from Ikariam.Podkupowacz.Podkupowacz import LOGINHASLO, LOGINHASLOZAJMOWACZY
 import json
 from mlbb.heroes import get_build, get_heroes, Heroes, Items
 from mlbb.heroes import LANES, ROLES, TIERS
