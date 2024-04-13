@@ -1,7 +1,7 @@
 # Bot na discord
 ### Przykładowe użycie komend do gry Mobile Legends Bang Bang
 
-- hero_info
+- hero_info - wypisuje informacje o bohatrze, tzn: jego wszystkie umiejętności wraz z opisami co robią.
 
 ![](img/image.png)
 
@@ -17,7 +17,7 @@ I na przykład dla tier SS wypisze wszystkich aktualnie najlepszych bohaterów.
 
 ![](img/image4.png)
 
-- item_info
+- item_info - wypisuje informacje na temat podanego itemu
 
 ![](img/image5.png)
 
@@ -26,7 +26,7 @@ I na przykład dla tier SS wypisze wszystkich aktualnie najlepszych bohaterów.
 
 ### Przykładowe użycie komend do gry Ikariam
 
-- podkupowacz
+- podkupowacz - wyznacza konto na które należy się zalogować, aby mieć szansę podkupić flotę przeciwnika
 
 ![](img/image7.png)
 
