@@ -1,0 +1,373 @@
+[
+  {
+    "name": "Antique Cuirass",
+    "is_boots": false,
+    "description": "Unique Passive - Deter: When attacked by an enemy hero's skill, reduces their Physical ATK by 8% for 2s (up to 3 stacks).",
+    "cost": 2170,
+    "stats": "+920 HP\r\n+2 HP Regen\r\n+52 Physical Defense"
+  },
+  {
+    "name": "Arcane Boots",
+    "is_boots": true,
+    "description": "",
+    "cost": 690,
+    "stats": "+10 Magic PEN\r\n+40 Movement SPD"
+  },
+  {
+    "name": "Athena's Shield",
+    "is_boots": false,
+    "description": "Unique Passive - Shield: Can be triggered when taking Magic Damage. Reduces Magic Damage taken by 25% for 5s (including the Magic Damage that triggers this effect). You will be able to trigger this effect again only after leaving combat for 10s.",
+    "cost": 2150,
+    "stats": "+900 HP\r\n+2 HP Regen\r\n+62 Magic Defense"
+  },
+  {
+    "name": "Berserker's Fury",
+    "is_boots": false,
+    "description": "Unique Attribute: +40% Crit Damage\r\nUnique Passive - Doom: Critical strikes grant 5% extra Physical Attack for 2 seconds",
+    "cost": 2250,
+    "stats": "+65 Physical Attack\r\n+25% Crit Chance"
+  },
+  {
+    "name": "Blade Armor",
+    "is_boots": false,
+    "description": "Unique Attribute: +20% Crit Damage Reduction\r\nUnique Passive - Bladed Armor: When struck by a Basic Attack, deals Physical Damage equal to 30% of the incoming damage (calculated before Damage) plus 25% of the hero's Physical Defense to the attacker and slows them by 15% for 1s.",
+    "cost": 1960,
+    "stats": "+90 Physical Defense"
+  },
+  {
+    "name": "Blade of Despair",
+    "is_boots": false,
+    "description": "Unique Passive - Despair: Attacking enemies below 50% HP grants 25% extra Physical Attack for 2 seconds (takes effect before the damage is dealt).",
+    "cost": null,
+    "stats": "+160 Physical Attack\r\n+5% Movement Speed"
+  },
+  {
+    "name": "Blade of the Heptaseas",
+    "is_boots": false,
+    "description": "Unique Attribute: +15 Physical PEN\r\nUnique Passive - Ambush: If no damage is dealt or taken from enemy heroes within 5 seconds, the next Basic Attack deals 160 (40% Total Physical ATK) as extra Physical Damage and slows the target by [40% for 1.5 seconds].",
+    "cost": null,
+    "stats": "+70 Physical ATK\r\n+250 HP"
+  },
+  {
+    "name": "Blood Wings",
+    "is_boots": false,
+    "description": "Unique Passive - Guard: Gain a Shield equal to 200% Magic Power. The shield will regenerate 20s after being damaged and grants 30 Movement Speed while it lasts.",
+    "cost": null,
+    "stats": "+500 HP\r\n+150 Magic Power"
+  },
+  {
+    "name": "Bloodlust Axe",
+    "is_boots": false,
+    "description": "Unique Attribute: +20% Spell Vamp",
+    "cost": null,
+    "stats": "+70 Physical ATK\r\n+10% CD Reduction"
+  },
+  {
+    "name": "Brute Force Breastplate",
+    "is_boots": false,
+    "description": "Unique Passive - Brute Force: Casting a skill or using Basic Attacks will increase Movement Speed by 2%, Physical & Magic Defense by 4. Lasts 4s. Stacks up to 5 times.",
+    "cost": 1870,
+    "stats": "+600 HP\r\n+30 Physical Defense\r\n+10% Cooldown Reduction"
+  },
+  {
+    "name": "Clock of Destiny",
+    "is_boots": false,
+    "description": "Unique Passive - Time: Gains 20 extra Max HP and 4 extra Magic Power every 20s, capped at 15 stacks.\r\nUnique Passive - Reincarnate: Gains 5% extra Magic Power and 600 extra Max Mana at max Time stacks.",
+    "cost": null,
+    "stats": "+60 Magic Power\r\n+500 HP\r\n+600 Mana"
+  },
+  {
+    "name": "Concentrated Energy",
+    "is_boots": false,
+    "description": "Unique Attribute: +20% Spell Vamp\r\nUnique Passive - Recharge: Dealing magic damage increases magic power by 5s (can gain 1 stacks per second, and up to 6 stacks total). When reaching full stacks, increases magic damage by 12% for 3s.",
+    "cost": 2020,
+    "stats": "+700 HP\r\n+70 Magic Power"
+  },
+  {
+    "name": "Corrosion Scythe",
+    "is_boots": false,
+    "description": "Unique Passive - Corrosive: Each time a Basic Attack deals damage to enemies, gains additional 80 Physical Damage and reduces the target's Movement Speed by 8% (halved for ranged Basic Attacks) for 1.5s. Stacking up to 5 times.\r\nUnique Passive - Impulse: When each Basic Attack deals damage to enemies, increase Attack Speed by 6%. Stacks up to 5 times. Lasts 3s.",
+    "cost": null,
+    "stats": "+30 Physical ATK\r\n+35% Attack Speed\r\n+5% Movement SPD"
+  },
+  {
+    "name": "Cursed Helmet",
+    "is_boots": false,
+    "description": "Unique Passive - Burning Soul: Deals Magic Damage equal to 1.5% of hero's Max HP per second to nearby enemies. This damage is increased by 100% against minions.",
+    "cost": 1760,
+    "stats": "+1200 HP\r\n+25 Magic Defense"
+  },
+  {
+    "name": "Demon Hunter Sword",
+    "is_boots": false,
+    "description": "Unique Passive - Devour: Basic attacks will deal 8% of the target's current HP as additional physical damage (up to 60 against creeps and minions).\r\nUnique Passive - Devour: Each Basic Attack grants 3% Lifesteal for 3s. Stack up to 5 times.",
+    "cost": null,
+    "stats": "+35 Physical ATK\r\n+25% Attack Speed"
+  },
+  {
+    "name": "Demon Shoes",
+    "is_boots": true,
+    "description": "Unique Passive - Mysticism: Eliminations of enemy heroes and assists regenerates hero\u2019s mana by 10%, while eliminating minions regenerates 4% of the hero\u2019s mana.",
+    "cost": null,
+    "stats": "+6 Mana Regen\r\n+40 Movement SPD"
+  },
+  {
+    "name": "Divine Glaive",
+    "is_boots": false,
+    "description": "Unique Attribute: +40% Magic PEN\r\nUnique Passive - Spellbreaker: Each point of the enemy's Magic Defense increases Magic Penetration by 0.1% when dealing damage to it, capped at 20%.",
+    "cost": null,
+    "stats": "+65 Magic Power"
+  },
+  {
+    "name": "Dominance Ice",
+    "is_boots": false,
+    "description": "Unique Passive - Artic Cold: Reduce the Attack Speed of nearby enemy heroes to 70% of normal.\r\nUnique Passive - Lifebane: Reduce the shield Shield and HP Regen effects of nearby enemy heroes to 50% of normal.",
+    "cost": 2010,
+    "stats": "+500 Mana\r\n+70 Physical Defense\r\n+5% Movement SPD"
+  },
+  {
+    "name": "Enchanted Talisman",
+    "is_boots": false,
+    "description": "Unique Passive - Mana Spring: Regenerates 15% of Max Mana every 10s in total.\r\nUnique Passive - Magic Mastery: Max CD Reduction increased by 5%.",
+    "cost": 1870,
+    "stats": "+50 Magic Power\r\n+ 250 HP\r\n+20% CD Reduction"
+  },
+  {
+    "name": "Endless Battle",
+    "is_boots": false,
+    "description": "Unique Passive - Divine Justice: After casting a skill, the next Basic Attack within 3 seconds deals 60% Physical Attack as extra True Damage (1.5 seconds cooldown).\r\nUnique Passive - Chase Fate: Triggering Divine Justice grants 10% extra Movement Speed.",
+    "cost": null,
+    "stats": "+65 Physical ATK\r\n+250 HP\r\n+10% Cooldown Reduction\r\n+8% Hybrid Lifesteal\r\n+5% Movement Speed\r\n+5% Mana Regen"
+  },
+  {
+    "name": "Feather of Heaven",
+    "is_boots": false,
+    "description": "Unique Passive - Affliction: Basic Attacks deal extra Magic Damage equal to 50 plus 30% Magic Power.\r\nUnique Passive - Impulse: When each Basic Attack deals damage to enemies, increase Attack Speed by 6%. Stacks up to 5 times. Lasts 3s.",
+    "cost": null,
+    "stats": "+20% Attack Speed\r\n+55 Magic Power\r\n+10% Lifesteal\r\n+5% CD Reduction"
+  },
+  {
+    "name": "Flask of the Oasis",
+    "is_boots": false,
+    "description": "Unique Attribute: +12% Healing Effect\nUnique Passive - Blessing: After casting a healing or shield skill, if the target's HP is below or falls below 35% within 5s, they will gain a 100-1500 shield that lasts 3s. When this effect triggers, it also reduces the cooldown of the caster's skills by 2s. This effect can only trigger once every 40s on the same target.",
+    "cost": 1850,
+    "stats": "+60 Magic Power\n+300HP\n+10% Cooldown Reduction"
+  },
+  {
+    "name": "Fleeting Time",
+    "is_boots": false,
+    "description": "Unique Passive - Timestream: Hero kills or assists reduce Ultimate's current cooldown by 30%.",
+    "cost": 2050,
+    "stats": "+70 Magic Power\r\n+350 Mana\r\n+15% CD Reduction"
+  },
+  {
+    "name": "Genius Wand",
+    "is_boots": false,
+    "description": "Unique Attribute: +10 Magic PEN\r\nUnique Passive - Magic: Dealing damage to enemy heroes will reduce their Magic Defense by 2~9 for 2s (the Defense reduction scales with level). Stacks up to 3 times.",
+    "cost": 2000,
+    "stats": "+75 Magic Power\r\n+5% Movement SPD"
+  },
+  {
+    "name": "Glowing Wand",
+    "is_boots": false,
+    "description": "Unique Passive - Scorch: Magic Damage will burn the targets for 3 seconds, dealing Magic Damage equal to 1.5% of the target's Max HP per second, and increasing Magic Damage taken by 2\u20134 (scales with level). Stacks up to 6 times.",
+    "cost": null,
+    "stats": "+400 HP\r\n+75 Magic Power\r\n+5% Movement SPD"
+  },
+  {
+    "name": "Golden Staff",
+    "is_boots": false,
+    "description": "Unique Passive - Swift: Unable to increase critical chance. Every 1% of critical chance gained will increase attack speed by 1%.\r\nUnique Passive - Endless Strike: After every 2 non-critical Basic Attacks. Attack Speed of the next Basic Attack is increased by 100% and its effects is triggered an extra 2 time(s).",
+    "cost": 2000,
+    "stats": "+55 Physical ATK\r\n+15% Attack Speed"
+  },
+  {
+    "name": "Great Dragon Spear",
+    "is_boots": false,
+    "description": "Unique Passive - Supreme Warrior: After casting an Ultimate, increase Movement Speed by 15% for 7.5s This effect has a 15s cooldown",
+    "cost": 2140,
+    "stats": "+70 Physical ATK\n+10% Cooldown Reduction\n+20% Crit Chance"
+  },
+  {
+    "name": "Guardian Helmet",
+    "is_boots": false,
+    "description": "Unique Passive - Recovery: Regenerates 2.5% Max HP per second (reduced to 0.5% Max HP per second over 5s after taking damage).",
+    "cost": null,
+    "stats": "+1550 HP\r\n+20 HP Regen"
+  },
+  {
+    "name": "Haas's Claws",
+    "is_boots": false,
+    "description": "Unique Attribute: +25% Lifesteal\r\nUnique Passive - Frenzy: Critical strikes grant 20% extra Attack Speed for 2 seconds.",
+    "cost": 2020,
+    "stats": "+30 Physical ATK\r\n+20% Attack Speed\r\n+20% Crit Chance"
+  },
+  {
+    "name": "Holy Crystal",
+    "is_boots": false,
+    "description": "Unique Passive - Mystery: Increases Magic Power by 21%~35% (Scales with level).",
+    "cost": null,
+    "stats": "+100 Magic Power"
+  },
+  {
+    "name": "Hunter Strike",
+    "is_boots": false,
+    "description": "Unique Attribute: +15 Physical PEN\r\nUnique Passive - Retribution: Deals damage to an enemy hero or Creep for 5 times in a row and improves Movement Speed by 50% that decays rapidly over 3s. This effect has 8s cooldown.",
+    "cost": 2010,
+    "stats": "+80 Physical ATK\r\n+10% CD Reduction"
+  },
+  {
+    "name": "Ice Queen Wand",
+    "is_boots": false,
+    "description": "Unique Passive - Ice Bound: Skills that deal damage to an enemy hero will slow them by 15%. This effect lasts 3s. Stacks up to 2 times.",
+    "cost": 2240,
+    "stats": "+300 HP\r\n+75 Magic Power\r\n+10% Spell Vamp\r\n+7% Movement SPD"
+  },
+  {
+    "name": "Immortality",
+    "is_boots": false,
+    "description": "Unique Passive - Immortal: Resurrect 2.5s upon death and gets 16% Max HP and 220-1200 shield that lasts for 3s. (Scales with level) This effect has a CD of 210s.",
+    "cost": 2120,
+    "stats": "+800 HP\r\n+30 Physical Defense"
+  },
+  {
+    "name": "Lightning Truncheon",
+    "is_boots": false,
+    "description": "Unique Passive - Resonate: Every 6s, the next skill deals 50-1000 Magic Damage (scales with Max Mana) to up to 3 enemies.",
+    "cost": 2250,
+    "stats": "+75 Magic Power\r\n+400 Mana\r\n+10% CD Reduction"
+  },
+  {
+    "name": "Magic Shoes",
+    "is_boots": true,
+    "description": "",
+    "cost": 710,
+    "stats": "+10% CD Reduction\r\n+40 Movement SPD"
+  },
+  {
+    "name": "Malefic Roar",
+    "is_boots": false,
+    "description": "Unique Attribute: +20% Physical Penetration\r\nUnique Passive - Armor Buster: When attacking an enemy, gains 0.125% extra Physical Penetration to each point of the enemy's Physical Defense, capped at 40%.",
+    "cost": null,
+    "stats": "+60 Physical ATK"
+  },
+  {
+    "name": "Necklace of Durance",
+    "is_boots": false,
+    "description": "Unique Passive - Gift: Regens 20% HP and Mana within 2s of leveling up.\r\nUnique Passive - Lifebane: Upon dealing damage to the target, reduces Shield and HP Regen of the target by 50% for 3s.",
+    "cost": 2010,
+    "stats": "+60 Magic Power\r\n+300 HP\r\n+380 Mana\r\n+5% CD Reduction"
+  },
+  {
+    "name": "Oracle",
+    "is_boots": false,
+    "description": "Unique Passive - Bless: Raise shield absorption and HP regen effect by 30%.",
+    "cost": 2060,
+    "stats": "+850 HP\r\n+42 Magic Defense\r\n+10% CD Reduction"
+  },
+  {
+    "name": "Queen's Wings",
+    "is_boots": false,
+    "description": "Unique Passive - Demonize: Reduces damage taken by 20% when health is less than 40% and increases your Spell Vamp by 35% for 5s. This effect has a cooldown of 60s.",
+    "cost": 2250,
+    "stats": "+900 HP\r\n+10% CD Reduction\r\n+5% Spell Vamp"
+  },
+  {
+    "name": "Radiant Armor",
+    "is_boots": false,
+    "description": "Unique Passive - Holy Blessing: Taking Magic Damage grants 5-8 Magic Damage Reductions (scales with level) for 3s, capped at 6 stacks.",
+    "cost": 1980,
+    "stats": "+950 HP\r\n+12 HP Regen\r\n+52 Magic Defense"
+  },
+  {
+    "name": "Rapid Boots",
+    "is_boots": true,
+    "description": "Unique Passive - Side Effect: Loses 25 Movement Speed for 5s upon dealing or taking damage.",
+    "cost": 750,
+    "stats": "+65 Movement SPD\r\n+35% Slow Reduction"
+  },
+  {
+    "name": "Rose Gold Meteor",
+    "is_boots": false,
+    "description": "Unique Passive - Lifeline: When HP is about to drop below 30%, gains a 840~1820 shield (scales with level) and Increase Movement Speed by 50% when triggered, the effect decays over 3 seconds. Cooldown: 60s.",
+    "cost": 2120,
+    "stats": "+30 Magic Defense\r\n+60 Physical ATK\r\n+10% Lifesteal"
+  },
+  {
+    "name": "Sea Halberd",
+    "is_boots": false,
+    "description": "Unique Passive - Lifebane: Dealing damage to a target will reduce the Shield and HP Regen effects on them to 50% of normal for 3 seconds.\r\nUnique Passive - Punish: Increase damage by 8% against enemy heroes with higher extra HP.",
+    "cost": null,
+    "stats": "+80 Physical Attack\r\n+25% Attack Speed"
+  },
+  {
+    "name": "Starlium Scythe",
+    "is_boots": false,
+    "description": "Unique Passive - Crisis: After casting a skill, the next Basic Attack within 3 seconds deals 100% Magic Power as extra True Damage and grants 10% extra Movement Speed. (1.5 seconds cooldown).",
+    "cost": 2220,
+    "stats": "+70 Magic Power\n+10% Cooldown Reduction\n+8% Hybrid Lifesteal\n+6 Mana Regen"
+  },
+  {
+    "name": "Swift Boots",
+    "is_boots": true,
+    "description": "",
+    "cost": 710,
+    "stats": "+15% Attack Speed\r\n+40 Movement SPD"
+  },
+  {
+    "name": "Thunder Belt",
+    "is_boots": false,
+    "description": "Unique Passive - Thunderbolt: In 3s after using the skill, the caster's next Basic Attack will deal True Damage as much as 50 plus 5% of the caster's Extra Max HP to the enemy target and surrounding units and slow them by 40-80% (increases with the caster's Extra Max HP) for 1s. This effect has a 1.5s cooldown.",
+    "cost": 1990,
+    "stats": "+800 HP\r\n+40 Physical Defense\r\n+30 Mana Regen\r\n+10% CD Reduction"
+  },
+  {
+    "name": "Tough Boots",
+    "is_boots": true,
+    "description": "Unique Passive - Fortitude: Reduces time controlled 30%.",
+    "cost": 700,
+    "stats": "+22 Magic Defense\r\n+40 Movement SPD"
+  },
+  {
+    "name": "Twilight Armor",
+    "is_boots": false,
+    "description": "Unique Passive - Twilight: When taking more than 600 damage in a single hit, the excess amount will be reduced by 150 + 15% of Max HP. Cooldown: 5s.",
+    "cost": 2100,
+    "stats": "+1200 HP\r\n+20 Physical Defense"
+  },
+  {
+    "name": "War Axe",
+    "is_boots": false,
+    "description": "Unique Passive - Fighting Spirit: Enter a battle stance upon dealing damage to any enemy unit. This increases the hero's Physical Attack by 9 and Physical Penetration by 3 each second for 3s, to a max of 8 stacks (Marksmen/Mages/Supports only receive 50% of these stacked effects); also grants 15% Movement Speed at full stacks.",
+    "cost": null,
+    "stats": "+550 HP\r\n+40 Physical ATK\r\n+10% CD Reduction"
+  },
+  {
+    "name": "Warrior Boots",
+    "is_boots": true,
+    "description": "Unique Passive - Valor: Physical Defense will be increased by 5 for 25s for each basic attack received, capped at 25.",
+    "cost": 720,
+    "stats": "+22 Physical Defense\r\n+40 Movement SPD"
+  },
+  {
+    "name": "Wind of Nature",
+    "is_boots": false,
+    "description": "Unique Active - Wind Chant: Immune to all Physical Damage. Last 2s. (Duration becomes half when used by non-marksmen). CD 70s.",
+    "cost": 1910,
+    "stats": "+30 Physical ATK\r\n+20% Attack Speed\r\n+10% Lifesteal"
+  },
+  {
+    "name": "Windtalker",
+    "is_boots": false,
+    "description": "Unique Passive - Typhoon: Every 5\u20132 seconds (reduced by 0.2 seconds for each Basic Attack), the next Basic Attack will hit up to 3 enemy units for 150\u2013362 Magic Damage. (This attack can critically strike and the damage increases to 200% against Minions.)\r\nUnique Passive - Activate: Each time Typhoon is cast, one's movement speed will be increased [by] 5% for a short time.",
+    "cost": null,
+    "stats": "+40% Attack Speed\r\n+20 Movement Speed\r\n+10% Crit Chance"
+  },
+  {
+    "name": "Winter Truncheon",
+    "is_boots": false,
+    "description": "Unique Active - Frozen: Freeze upon using. The hero can't do anything but will be immune to all DMG and debuff. Last 2s, CD 100s.",
+    "cost": null,
+    "stats": "+400 HP\r\n+25 Physical Defense\r\n+60 Magic Power"
+  }
+]
