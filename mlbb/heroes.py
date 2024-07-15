@@ -4,8 +4,11 @@ import numpy as np
 import discord
 import io
 import re
+import os
+
 from random import randint
 
+path = os.path.dirname(__file__)
 
 class Const:
     token = ""
@@ -199,7 +202,7 @@ def get_build():
     for item in y['itemDetails']:
         items.append(item)
     items = sorted(items, key=lambda x: x['name'])
-    dump('mlbb/items.json', items)
+    dump(f'{path}/items.json', items)
 
 
 def get_heroes(update=False):
@@ -216,18 +219,18 @@ def get_heroes(update=False):
     #         x = requests.get(link_build(hero.get('id', 0))).json()
     #         y = x['pageProps']['data']['heroSkillsData']
     #         hero['heroSkillsData'] = y
-    dump(f'mlbb/{typ}.json', data)
+    dump(f'{path}/{typ}.json', data)
 
 
 def read_items():
-    filename = "mlbb/items.json"
+    filename = f"{path}/items.json"
     with open(filename, 'r') as f:
         data = json.load(f)
     return data
 
 
 def read_heroes(heroUpdate=False):
-    filename = f"mlbb/{Filtr[heroUpdate][0]}.json"
+    filename = f"{path}/{Filtr[heroUpdate][0]}.json"
     with open(filename, 'r') as f:
         data = json.load(f)
     return data

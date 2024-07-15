@@ -1,8 +1,12 @@
 import json
+import os
+
+
+file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'katakana.json'))
 
 
 def read_kana():
-    with open("./Jap/katakana.json", 'r') as f:
+    with open(file_path, 'r') as f:
         al = json.load(f)
         basic = al["basic kana"]
         extended = al["extended kana"]

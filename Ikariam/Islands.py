@@ -1,8 +1,11 @@
 import ctypes
 import csv
+import os
 
 global c
-c = ctypes.CDLL('./Ikariam/C/ika.so')
+file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'C/ika.so'))
+# print(file_path)
+c = ctypes.CDLL(file_path)
 
 
 class island(ctypes.Structure):
