@@ -1,4 +1,3 @@
-import time
 import requests
 import json
 import re
@@ -100,7 +99,6 @@ class rgBot(session):
                     every_not_on_palm.append(res)
             if len(matches) < 50:
                 break
-            time.sleep(4)
         return every_not_on_palm
 
     def save_as(self):

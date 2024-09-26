@@ -9,8 +9,8 @@ from datetime import datetime
 from Ikariam.Koszty import Composition, upkeep_h
 import json
 import asyncio
-from .Ikariam.api.Cookie import cookie
-from .Ikariam.api.session import rgBot
+from Ikariam.api.Cookie import cookie
+from Ikariam.api.session import rgBot
 
 
 intents = discord.Intents().default()
@@ -171,4 +171,4 @@ async def check_generals():
         user = Khufra.fetch_user(ME)
         for every_palm in res:
             await user.send(f"{every_palm[0]} zszedł z urlopu. Stare rg: {every_palm[1]}")
-        time.sleep(44)
+        await asyncio.sleep(44)
