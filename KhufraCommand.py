@@ -168,7 +168,7 @@ async def check_generals():
     rg_bot = rgBot(cookie)
     while not Khufra.is_closed():
         res = rg_bot.analize_rg()
-        user = Khufra.fetch_user(ME)
+        user = await Khufra.fetch_user(ME)
         for every_palm in res:
             await user.send(f"{every_palm[0]} zszedł z urlopu. Stare rg: {every_palm[1]}")
-        await asyncio.sleep(44)
+        await asyncio.sleep(58)
