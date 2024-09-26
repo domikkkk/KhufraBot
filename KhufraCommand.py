@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from Common import ME, LOGINHASLO, LOGINHASLOZAJMOWACZY
+from Common import ME, CHANNEL
 from Ikariam.Islands import calc, Wyspy
 from Jap.keyboard import parse_foreach
 import time
@@ -166,9 +166,17 @@ async def wyspy(interaction: discord.Interaction, x: int, y: int):
 async def check_generals():
     await Khufra.wait_until_ready()
     rg_bot = rgBot(cookie)
+    loop = asyncio.get_running_loop()
+    channel = Khufra.get_channel(CHANNEL)
     while not Khufra.is_closed():
-        res = rg_bot.analize_rg()
-        user = await Khufra.fetch_user(ME)
+        print("Requesting data")
+        res = await loop.run_in_executor(None, rg_bot.analize_rg)
+        # except Exception:
+        #     await user.send("Prawdopodobnie wymagana nowa sesja")
+        #     break
         for every_palm in res:
-            await user.send(f"{every_palm[0]} zszedł z urlopu. Stare rg: {every_palm[1]}")
-        await asyncio.sleep(58)
+            if every_palm[1] == -1:
+                await channel.send(f"{every_palm[0]} wrócił na urlop")
+            else:
+                await channel.send(f"{every_palm[0]} zszedł z urlopu. Stare rg: {every_palm[1]}")
+        await asyncio.sleep(60)

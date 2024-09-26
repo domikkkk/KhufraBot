@@ -1,6 +1,7 @@
 import requests
 import json
 import re
+from http.client import IncompleteRead
 
 
 class session:
@@ -21,7 +22,7 @@ class session:
             "offset": -1,
             "view": "highscore",
             "sbm": "Submit",
-            "searchUser": '',
+            "searchUser": 'Furi',
             "backgroundView": "city",
             "currentCityId": '',
             "templateView": "highscore",
@@ -54,20 +55,26 @@ class rgBot(session):
             "actionRequest": self.actionrequest,
             "ajax": 1
         }
-        x = self.s.post(self.index, data=data)
         try:
+            x = self.s.post(self.index, data=data, timeout=(5, 10))
+            print(x.status_code, end=' ')
             x = x.json()
-        except Exception:
-            raise Exception("Bruh")
+        except requests.exceptions.RequestException as e:
+            return None
+        except IncompleteRead:
+            return None
         self.actionrequest = x[0][1]['actionRequest']
         return x[1][1][1]
 
     def put_match(self, match):
+        palmtree = True if 'This player is currently on vacation' or 'Gracz jest obecnie na urlopie' in match else False
         pattern = r"<span class='avatarName'>(.*?)</span>"
         name = re.findall(pattern, match, re.DOTALL)[0]
+        if name in self.rg_info:
+            if palmtree == self.rg_info[name]['palm']:
+                return None
         pattern = r'<td class="score">(.*?)</td>'
         score = re.findall(pattern, match, re.DOTALL)[0]
-        palmtree = True if 'title="This player is currently on vacation"' in match else False
         res = None
         if name not in self.rg_info:
             self.rg_info[name] = {
@@ -75,23 +82,28 @@ class rgBot(session):
                 "palm": palmtree
             }
         else:
-            palm = self.rg_info[name]["palm"]
-            oldscore = self.rg_info[name]["score"]
-            if not palm:
-                res = (name, oldscore)
-            self.rg_info[name] = {
-                "score": score,
-                "palm": palmtree
-            }
+            if not palmtree:
+                res = (name, self.rg_info[name]["score"])
+            else:
+                res = (name, -1)
+                self.rg_info[name] = {
+                    "score": score,
+                    "palm": palmtree
+                }
         return res
 
     def analize_rg(self, top=200, user=''):
         if self.actionrequest == '':
             self.set_action_request()
+            print(self.actionrequest)
         pattern = r'<tr class="[^"]*".*?</tr>'
         every_not_on_palm = []
-        for i in range(int(top // 50)):
+        i = 0
+        while i < int(top // 50):
             html = self.get_rg_highscore(i * 50, user)
+            if not html:
+                print("Error while downloading data is detected. Contining...")
+                continue
             matches = re.findall(pattern, html, re.DOTALL)
             for match in matches:
                 res = self.put_match(match)
@@ -99,6 +111,8 @@ class rgBot(session):
                     every_not_on_palm.append(res)
             if len(matches) < 50:
                 break
+            i += 1
+        print()
         return every_not_on_palm
 
     def save_as(self):
