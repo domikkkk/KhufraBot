@@ -58,27 +58,6 @@ async def on_ready():
     # Khufra.loop.create_task(update_per_day())
 
 
-# @Khufra.event
-# async def on_message(mes: discord.Message):
-#     global e
-#     if mes.author.id == Khufra.user.id:
-#         return
-#     if mes.author.bot and mes.author.id == 757993517145391213:
-#         mess = mes.content.lower()
-#         idx = mess.find('zszedł z urlopu')
-#         if idx == -1:
-#             return
-#         user = await Khufra.fetch_user(269481968461283328)
-#         await user.send(LOGINHASLO)
-#         await user.send(LOGINHASLOZAJMOWACZY)
-#         rg_name = mess[:idx-1].split(' ')[-1]
-#         for name in e.get_rg_keepers():
-#             if Podkupowacz.podciąg(name, rg_name) / max(len(name),
-#                                                         len(rg_name)) > 0.75:
-#                 await mes.channel.send(e.describe(name))
-#                 return
-#     return
-
 
 @Khufra.tree.command(description="Stara się zamienić tekst romaji na zapis w\
     katakanie")
@@ -112,16 +91,6 @@ async def find(interaction: discord.Interaction, x: int, y: int, h: int,
         await interaction.channel.send(res)
     except Exception as e:
         await error(interaction, e)
-
-
-# @Khufra.tree.command()
-# async def update(interaction: discord.Interaction):
-#     global e
-#     try:
-#         e.update()
-#         await interaction.response.send_message("Pomyślnie zaktualizowano")
-#     except Exception as ee:
-#         await error(interaction, ee)
 
 
 @Khufra.tree.command(description="Wyznacza skład na podany czas z zapasem na\
@@ -188,22 +157,6 @@ async def a_p(interaction: discord.Interaction, r: int):
     await interaction.response.send_message(f"{p} / {p-2}")
 
 
-# @Khufra.tree.command(description='Wypisuje znane skarbonki wroga')
-# async def all_enemy_rg(interaction: discord.Interaction):
-#     global e
-#     rg_keepers = e.get_rg_keepers()
-#     await interaction.response.send_message(f"```py\n{rg_keepers}\n```")
-
-
-# @Khufra.tree.command(description='Wypisuje podkupowacze na jakiego trzeba\
-#     się zalogować w zależności od podanej otwartej skarbonki')
-# @app_commands.describe(enemy_name='Nazwa wrogiej skarbonki')
-# async def podkupowacz(interaction: discord.Interaction, enemy_name: str):
-#     global e
-#     res = e.describe(enemy_name)
-#     await interaction.response.send_message(res)
-
-
 @Khufra.tree.command(description="Wyznacza wyspy do miotłowania")
 @app_commands.describe(x='Kordynat x', y='Kordynat y')
 async def wyspy(interaction: discord.Interaction, x: int, y: int):
@@ -214,95 +167,3 @@ async def wyspy(interaction: discord.Interaction, x: int, y: int):
         await interaction.response.send_message(f"```json\n{res}\n```")
     except Exception as ee:
         await error(interaction, ee)
-
-
-# @Khufra.tree.command()
-# @app_commands.describe(heroname='Nazwa Bohatera')
-# async def hero_info(interaction: discord.Interaction, heroname: str):
-#     heroes = Heroes()
-#     res = heroes.find(heroname)
-#     embeds = heroes.get_info()
-#     if embeds:
-#         await interaction.response.send_message(embeds=embeds)
-#     else:
-#         await interaction.response.send_message("Nie znaleziono podanego bohatera")
-
-
-# @Khufra.tree.command()
-# @app_commands.describe(itemname='Nazwa itemu')
-# async def item_info(interaction: discord.Interaction, itemname: str):
-#     items = Items()
-#     res = items.find(itemname)
-#     embed = items.get_info()
-#     if embed:
-#         await interaction.response.send_message(embed=embed)
-#     else:
-#         await interaction.response.send_message("Nie znaleziono podanego itemu")
-
-
-# @Khufra.tree.command()
-# @app_commands.describe(lane="Podaj linie")
-# @app_commands.choices(lane = [
-#     app_commands.Choice(name=l[3:], value=l) for l in LANES
-# ])
-# @app_commands.choices(role = [
-#     app_commands.Choice(name=r, value=r) for r in ROLES
-# ])
-# @app_commands.choices(tier = [
-#     app_commands.Choice(name=t, value=t) for t in TIERS
-# ])
-# async def heroes(interaction: discord.Interaction,
-#                  lane: app_commands.Choice[str]=None,
-#                  role: app_commands.Choice[str]=None,
-#                  tier: app_commands.Choice[str]=None):
-#     if lane is None and role is None and tier is None:
-#         await interaction.response.send_message("Musisz wskazać co najmniej 1 rodzaj.")
-#         return
-#     if lane is None:
-#         lane = app_commands.Choice(name='lane', value=None)
-#     if role is None:
-#         role = app_commands.Choice(name='role', value=None)
-#     if tier is None:
-#         tier = app_commands.Choice(name='tier', value=None)
-#     filter = {
-#         'lanes': lane.value,
-#         'tier': tier.value,
-#         'role': role.value
-#     }
-#     H = Heroes()
-#     embeds:list[discord.Embed] = H.get_all(filter)
-#     desc = ''
-#     for key in filter:
-#             if not filter[key]:
-#                 continue
-#             else:
-#                 desc += f"\n- {filter[key]}"
-#     for embed in embeds:
-#         embed.description = desc[1:]
-#     if embeds:
-#         await interaction.response.send_message(embeds=embeds)
-#     else:
-#         mes = "Brak bohaterów spełniających podane warunki:"
-#         mes += desc
-#         await interaction.response.send_message(mes)
-
-
-# @Khufra.tree.command()
-# async def items(interaction: discord.Interaction):
-#     I = Items()
-#     embeds = I.get_all()
-#     if embeds:
-#         await interaction.response.send_message(embeds=embeds)
-#     else:
-#         await interaction.response.send_message("Coś poszło nie tak ...")
-
-
-# async def update_per_day():
-#     await Khufra.wait_until_ready()
-#     while not Khufra.is_closed():
-#         hour = datetime.now().hour
-#         if hour == 15:
-#             get_heroes()
-#             get_heroes(True)
-#             get_build()
-#         await asyncio.sleep(60 * 60)

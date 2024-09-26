@@ -11,4 +11,4 @@ dist
 *.egg*
 setup.py
 MANIFEST.in
-Ikariam/API/login.py
+Ikariam/api/Cookie.py
