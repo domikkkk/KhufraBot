@@ -9,3 +9,6 @@ ikariam/C/ika.so
 build
 dist
 *.egg*
+setup.py
+MANIFEST.in
+Ikariam/API/login.py
