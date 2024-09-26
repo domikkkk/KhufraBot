@@ -57,17 +57,18 @@ class rgBot(session):
         }
         try:
             x = self.s.post(self.index, data=data, timeout=(5, 10))
-            print(x.status_code, end=' ')
             x = x.json()
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException:
             return None
         except IncompleteRead:
+            return None
+        except Exception:
             return None
         self.actionrequest = x[0][1]['actionRequest']
         return x[1][1][1]
 
     def put_match(self, match):
-        palmtree = True if 'This player is currently on vacation' or 'Gracz jest obecnie na urlopie' in match else False
+        palmtree = True if 'This player is currently on vacation' in match or 'Gracz jest obecnie na urlopie' in match else False
         pattern = r"<span class='avatarName'>(.*?)</span>"
         name = re.findall(pattern, match, re.DOTALL)[0]
         if name in self.rg_info:
@@ -83,26 +84,25 @@ class rgBot(session):
             }
         else:
             if not palmtree:
-                res = (name, self.rg_info[name]["score"])
+                res = (name, score)
             else:
                 res = (name, -1)
-                self.rg_info[name] = {
-                    "score": score,
-                    "palm": palmtree
-                }
+            self.rg_info[name] = {
+                "score": score,
+                "palm": palmtree
+            }
         return res
 
     def analize_rg(self, top=200, user=''):
         if self.actionrequest == '':
             self.set_action_request()
-            print(self.actionrequest)
         pattern = r'<tr class="[^"]*".*?</tr>'
         every_not_on_palm = []
         i = 0
         while i < int(top // 50):
             html = self.get_rg_highscore(i * 50, user)
             if not html:
-                print("Error while downloading data is detected. Contining...")
+                # print("Error while downloading data is detected. Continuing...")
                 continue
             matches = re.findall(pattern, html, re.DOTALL)
             for match in matches:
@@ -112,7 +112,6 @@ class rgBot(session):
             if len(matches) < 50:
                 break
             i += 1
-        print()
         return every_not_on_palm
 
     def save_as(self):

@@ -169,14 +169,10 @@ async def check_generals():
     loop = asyncio.get_running_loop()
     channel = Khufra.get_channel(CHANNEL)
     while not Khufra.is_closed():
-        print("Requesting data")
         res = await loop.run_in_executor(None, rg_bot.analize_rg)
-        # except Exception:
-        #     await user.send("Prawdopodobnie wymagana nowa sesja")
-        #     break
         for every_palm in res:
             if every_palm[1] == -1:
-                await channel.send(f"{every_palm[0]} wrócił na urlop")
+                await channel.send(f"{every_palm[0]} poszedł pod :palm_tree:")
             else:
                 await channel.send(f"{every_palm[0]} zszedł z urlopu. Stare rg: {every_palm[1]}")
         await asyncio.sleep(60)
