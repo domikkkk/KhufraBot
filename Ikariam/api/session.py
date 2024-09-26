@@ -1,3 +1,4 @@
+import time
 import requests
 import json
 import re
@@ -63,11 +64,12 @@ class rgBot(session):
         return x[1][1][1]
 
     def put_match(self, match):
-        pattern = r'<span class="avatarName".*?</span>'
+        pattern = r"<span class='avatarName'>(.*?)</span>"
         name = re.findall(pattern, match, re.DOTALL)[0]
-        pattern = r'<td class="score".*?</td>'
+        pattern = r'<td class="score">(.*?)</td>'
         score = re.findall(pattern, match, re.DOTALL)[0]
         palmtree = True if 'title="This player is currently on vacation"' in match else False
+        res = None
         if name not in self.rg_info:
             self.rg_info[name] = {
                 "score": score,
@@ -77,26 +79,29 @@ class rgBot(session):
             palm = self.rg_info[name]["palm"]
             oldscore = self.rg_info[name]["score"]
             if not palm:
-                self.send_warning(name, oldscore)
+                res = (name, oldscore)
             self.rg_info[name] = {
                 "score": score,
                 "palm": palmtree
             }
+        return res
 
     def analize_rg(self, top=200, user=''):
         if self.actionrequest == '':
             self.set_action_request()
         pattern = r'<tr class="[^"]*".*?</tr>'
+        every_not_on_palm = []
         for i in range(int(top // 50)):
             html = self.get_rg_highscore(i * 50, user)
             matches = re.findall(pattern, html, re.DOTALL)
             for match in matches:
-                self.put_match(match)
+                res = self.put_match(match)
+                if res is not None:
+                    every_not_on_palm.append(res)
             if len(matches) < 50:
                 break
-
-    def send_warning(self, name, oldscore):
-        pass
+            time.sleep(4)
+        return every_not_on_palm
 
     def save_as(self):
         with open("rg_info.json", "w") as f:
@@ -121,8 +126,3 @@ class IkaBot(session):
             x = x.json()
         except Exception:
             raise Exception("Bruh")
-
-
-if __name__ == "__main__":
-    s = session("")
-    s.get_action_request()

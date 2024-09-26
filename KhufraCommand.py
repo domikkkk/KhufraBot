@@ -7,11 +7,10 @@ from Jap.keyboard import parse_foreach
 import time
 from datetime import datetime
 from Ikariam.Koszty import Composition, upkeep_h
-from Ikariam.Podkupowacz import Podkupowacz
 import json
-from mlbb.heroes import get_build, get_heroes, Heroes, Items
-from mlbb.heroes import LANES, ROLES, TIERS
 import asyncio
+from .Ikariam.api.Cookie import cookie
+from .Ikariam.api.session import rgBot
 
 
 intents = discord.Intents().default()
@@ -48,14 +47,9 @@ async def error(interaction: discord.Interaction, e: Exception):
 async def on_ready():
     synced = await Khufra.tree.sync()
     print(len(synced))
-    # guilds = Khufra.guilds
-    # global e
     global w
-    # e = Podkupowacz.Excel()
     w = Wyspy()
-    # guilds = Khufra.guilds
-    # guild = next((g for g in guilds if g.name == "Stare D-S"), None)
-    # Khufra.loop.create_task(update_per_day())
+    Khufra.loop.create_task(check_generals())
 
 
 
@@ -167,3 +161,14 @@ async def wyspy(interaction: discord.Interaction, x: int, y: int):
         await interaction.response.send_message(f"```json\n{res}\n```")
     except Exception as ee:
         await error(interaction, ee)
+
+
+async def check_generals():
+    await Khufra.wait_until_ready()
+    rg_bot = rgBot(cookie)
+    while not Khufra.is_closed():
+        res = rg_bot.analize_rg()
+        user = Khufra.fetch_user(ME)
+        for every_palm in res:
+            await user.send(f"{every_palm[0]} zszedł z urlopu. Stare rg: {every_palm[1]}")
+        time.sleep(44)
