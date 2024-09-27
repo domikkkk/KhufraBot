@@ -57,15 +57,20 @@ class rgBot(session):
         }
         try:
             x = self.s.post(self.index, data=data, timeout=(5, 10))
-            x = x.json()
+            y = x.json()
+            self.actionrequest = y[0][1]['actionRequest']
+            return y[1][1][1]
         except requests.exceptions.RequestException:
             return None
         except IncompleteRead:
             return None
+        except TypeError:
+            with open("error.txt", 'w') as f:
+                f.write(x.text)
+            return None
         except Exception:
             return None
-        self.actionrequest = x[0][1]['actionRequest']
-        return x[1][1][1]
+        
 
     def put_match(self, match):
         palmtree = True if 'This player is currently on vacation' in match or 'Gracz jest obecnie na urlopie' in match else False

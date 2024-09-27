@@ -5,7 +5,7 @@ Khufra.log
 Ikariam/C/main*
 *xlsx
 nohup.out
-Ikariam/C/ika.so
+Ikariam/C/*.so
 build
 dist
 *.egg*
