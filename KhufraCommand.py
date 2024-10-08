@@ -2,15 +2,15 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from Common import ME, CHANNEL
-from Ikariam.Islands import calc, Wyspy
+from Ikariam.Islands import calc
 from Jap.keyboard import parse_foreach
 import time
 from datetime import datetime
 from Ikariam.Koszty import Composition, upkeep_h
-import json
 import asyncio
 from Ikariam.api.Cookie import cookie
-from Ikariam.api.session import rgBot
+from Ikariam.api.session import ExpiredSession
+from Ikariam.api.rgBot import rgBot
 
 
 intents = discord.Intents().default()
@@ -21,13 +21,12 @@ intents.reactions = True
 
 
 # logging.basicConfig(filename="Khufra.log", level=logging.DEBUG, format='%(levelname)s - %(asctime)s - %(message)s')
-Khufra = commands.Bot(command_prefix='?',
-                      intents=intents)
+Khufra = commands.Bot(command_prefix='?', intents=intents)
 
 
 async def error(interaction: discord.Interaction, e: Exception):
     member = interaction.client.get_user(ME)
-    await interaction.response.send_message('Coś poszło nie tak ...',
+    await interaction.response.send_message(f'Coś poszło nie tak ... {e}',
                                             ephemeral=True)
     try:
         person = interaction.user.nick
@@ -47,10 +46,25 @@ async def error(interaction: discord.Interaction, e: Exception):
 async def on_ready():
     synced = await Khufra.tree.sync()
     print(len(synced))
-    global w
-    w = Wyspy()
+    # global w
+    # w = Wyspy()
+    global rg_bot
+    rg_bot = rgBot(cookie)
     Khufra.loop.create_task(check_generals())
 
+
+@Khufra.tree.command()
+async def update(interaction: discord.Interaction):
+    try:
+        me = Khufra.get_user(ME)
+        with open("HH.txt", "r") as f:
+            text = f.read()
+            res = rg_bot.load_owners(text)
+        await interaction.response.send_message("Pomyślnie zaktualizowano")
+        for line in res:
+            await me.send(line)
+    except Exception as e:
+        await error(interaction, e)
 
 
 @Khufra.tree.command(description="Stara się zamienić tekst romaji na zapis w\
@@ -151,28 +165,41 @@ async def a_p(interaction: discord.Interaction, r: int):
     await interaction.response.send_message(f"{p} / {p-2}")
 
 
-@Khufra.tree.command(description="Wyznacza wyspy do miotłowania")
-@app_commands.describe(x='Kordynat x', y='Kordynat y')
-async def wyspy(interaction: discord.Interaction, x: int, y: int):
-    global w
+
+@Khufra.tree.command(description="Przypisuje właścicieli do skarbonek")
+@app_commands.describe(text="Zwykły tekst gdzie każda linia to: nazwa skarbonki -\
+    właściwiel [soj] ewentualnie samo [soj]")
+async def assign(interaction: discord.Interaction, text: str):
+    global rg_bot
     try:
-        res = w.find(x, y)
-        res = json.dumps(res, indent=4, ensure_ascii=False)
-        await interaction.response.send_message(f"```json\n{res}\n```")
-    except Exception as ee:
-        await error(interaction, ee)
+        res = rg_bot.load_owners(text)
+        if len(res) > 0:
+            await interaction.response.send_message("Nie można dopasować niektórych skarbonek:")
+            for line in res:
+                await interaction.channel.send(line)
+        else:
+            await interaction.response.send_message("Pomyślnie zaktualizowano")
+    except Exception as e:
+        await error(interaction, e)
 
 
 async def check_generals():
     await Khufra.wait_until_ready()
-    rg_bot = rgBot(cookie)
+    global rg_bot
     loop = asyncio.get_running_loop()
     channel = Khufra.get_channel(CHANNEL)
     while not Khufra.is_closed():
-        res = await loop.run_in_executor(None, rg_bot.analize_rg)
+        try:
+            res = await loop.run_in_executor(None, rg_bot.analize_rg, 250)
+        except ExpiredSession:
+            await channel.send(f"<@{ME}> potrzebna nowa sejsa.")
+            break
         for every_palm in res:
             if every_palm[1] == -1:
                 await channel.send(f"{every_palm[0]} poszedł pod :palm_tree:")
             else:
-                await channel.send(f"{every_palm[0]} zszedł z urlopu. Stare rg: {every_palm[1]}")
-        await asyncio.sleep(60)
+                mes = f"{every_palm[0]} zszedł z urlopu. Rg: {every_palm[1]}."
+                if every_palm[2]:
+                    mes += f" Czyje: {every_palm[2]}"
+                await channel.send(mes)
+        await asyncio.sleep(54)

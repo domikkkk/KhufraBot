@@ -1,10 +1,28 @@
 import requests
-import json
-import re
-from http.client import IncompleteRead
+import numpy as np
 
 
-class session:
+class ExpiredSession(Exception):
+    def __init__(self) -> None:
+        super().__init__("Potrzebujesz nowej sesji")
+
+
+def podciąg(s1: str, s2: str):
+    s1 = s1.lower()
+    s2 = s2.lower()
+    m = len(s1)
+    n = len(s2)
+    L = np.zeros((m+1, n+1))
+    for i in range(m):
+        for j in range(n):
+            if s1[i] == s2[j]:
+                L[i+1, j+1] = 1 + L[i, j]
+            else:
+                L[i+1, j+1] = max(L[i+1, j], L[i, j+1])
+    return L[m, n]
+
+
+class IkaBot:
     def __init__(self, cookie) -> None:
         self.s = requests.Session()
         self.index = "https://s62-pl.ikariam.gameforge.com/index.php"
@@ -15,6 +33,10 @@ class session:
             "x-requested-with": "XMLHttpRequest"
         }
         self.actionrequest = ''
+        self.dict_of_cities = {}
+        self.current_city_id = -1
+        self.own_city_type = 'cityMilitary'
+        self.foreign_city_type = "relatedCities"
 
     def set_action_request(self):
         data = {
@@ -29,116 +51,121 @@ class session:
             "actionRequest": self.actionrequest,
             "ajax": 1
         }
-        x = self.s.post(self.index, data=data)
+        y = [[0, [0]]]
         try:
-            x = x.json()
-        except Exception:
-            raise Exception("Bruh")
-        self.actionrequest = x[0][1]["actionRequest"]
-
-
-class rgBot(session):
-    def __init__(self, cookie) -> None:
-        super().__init__(cookie)
-        self.rg_info = {}
-
-    def get_rg_highscore(self, place, user=''):
-        data = {
-            "highscoreType": "army_score_main",  # score
-            "offset": place,
-            "view": "highscore",
-            "sbm": "Submit",
-            "searchUser": user,
-            "backgroundView": "city",
-            "currentCityId": '',
-            "templateView": "highscore",
-            "actionRequest": self.actionrequest,
-            "ajax": 1
-        }
-        try:
-            x = self.s.post(self.index, data=data, timeout=(5, 10))
+            x = self.s.post(self.index, data=data)
             y = x.json()
-            self.actionrequest = y[0][1]['actionRequest']
-            return y[1][1][1]
-        except requests.exceptions.RequestException:
-            return None
-        except IncompleteRead:
-            return None
+            self.actionrequest = y[0][1]["actionRequest"]
+            cities = y[0][1]["headerData"]["cityDropdownMenu"]
+            self.is_own = y[0][1]["headerData"]["relatedCity"]["owncity"]
+            self.update_cities(cities)
         except TypeError:
-            with open("error.txt", 'w') as f:
-                f.write(x.text)
-            return None
-        except Exception:
-            return None
-        
+            if y[0][1][0] == "error":
+                raise ExpiredSession
+        except Exception as e:
+            print(e)
 
-    def put_match(self, match):
-        palmtree = True if 'This player is currently on vacation' in match or 'Gracz jest obecnie na urlopie' in match else False
-        pattern = r"<span class='avatarName'>(.*?)</span>"
-        name = re.findall(pattern, match, re.DOTALL)[0]
-        if name in self.rg_info:
-            if palmtree == self.rg_info[name]['palm']:
-                return None
-        pattern = r'<td class="score">(.*?)</td>'
-        score = re.findall(pattern, match, re.DOTALL)[0]
-        res = None
-        if name not in self.rg_info:
-            self.rg_info[name] = {
-                "score": score,
-                "palm": palmtree
-            }
-        else:
-            if not palmtree:
-                res = (name, score)
-            else:
-                res = (name, -1)
-            self.rg_info[name] = {
-                "score": score,
-                "palm": palmtree
-            }
-        return res
-
-    def analize_rg(self, top=200, user=''):
-        if self.actionrequest == '':
-            self.set_action_request()
-        pattern = r'<tr class="[^"]*".*?</tr>'
-        every_not_on_palm = []
-        i = 0
-        while i < int(top // 50):
-            html = self.get_rg_highscore(i * 50, user)
-            if not html:
-                # print("Error while downloading data is detected. Continuing...")
+    def update_cities(self, cities: dict):
+        self.dict_of_cities = {}
+        self.current_city_id = cities[cities["selectedCity"]]["id"]
+        for city in cities.values():
+            if not isinstance(city, dict):
                 continue
-            matches = re.findall(pattern, html, re.DOTALL)
-            for match in matches:
-                res = self.put_match(match)
-                if res is not None:
-                    every_not_on_palm.append(res)
-            if len(matches) < 50:
-                break
-            i += 1
-        return every_not_on_palm
+            city_id = int(city["id"])
+            city["relationship"] = city["relationship"] == "ownCity"
+            self.dict_of_cities[city_id] = city
 
-    def save_as(self):
-        with open("rg_info.json", "w") as f:
-            json.dump(self.rg_info, f, indent=4)
+    def get_island_id(self, x, y):
+        data = {
+            "action": "WorldMap",
+            "function": "getJSONArea",
+            "x_min": x,
+            "x_max": x,
+            "y_min": y,
+            "y_max": y,
+        }
+        temp = [[0, [0]]]
+        try:
+            res = self.s.post(self.index, data=data)
+            temp = res.json()
+            temp = temp["data"]
+            if len(temp) < 1:
+                return -1
+            island_id = temp[str(x)][str(y)][0]
+        except TypeError:
+            if temp[0][1][0] == "error":
+                raise ExpiredSession
+        except Exception as e:
+            print(e)
+        return int(island_id)
 
-
-class IkaBot(session):
-    def __init__(self, cookie) -> None:
-        super().__init__(cookie)
-
-    def update_data(self, city_id):
+    def get_island_info(self, island_id):
+        if island_id < 0:
+            return None
         data = {
             "view": "updateGlobalData",
+            "islandId": island_id,
+            "backgroundView": "island",
+            "currentIslandId": island_id,
+            "actionRequest": self.actionrequest,
+            "ajax": 1   
+        }
+        y = [[0, [0]]]
+        try:
+            x = self.s.post(self.index, data=data)
+            y = x.json()
+            cities = y[0][1]["backgroundData"]["cities"]
+        except TypeError:
+            if y[0][1][0] == "error":
+                raise ExpiredSession
+        except Exception as e:
+            print(e)
+        return cities
+
+    def change_city(self, target_city_id):
+        data = {
+            "action": "header",
+            "function": "changeCurrentCity",
+            "actionRequest": self.actionrequest,
+            "oldView": "city",
+            "cityId": target_city_id,
+            "currentCityId": self.current_city_id,
+            "backgroundView": "city",
+            "ajax": 1
+        }
+        temp = [[0, [0]]]
+        try:
+            res = self.s.post(self.index, data=data)
+            temp = res.json()
+            temp = temp[0][1]
+            self.actionrequest = temp["actionRequest"]
+            self.current_city_id = target_city_id
+        except TypeError:
+            if temp[0][1][0] == "error":
+                raise ExpiredSession
+        except Exception as e:
+            print(e)
+
+    def get_city_units(self, city_id):
+        data = {
+            "view": self.own_city_type if self.dict_of_cities[city_id]["relationship"] else self.foreign_city_type,
+            "activeTab": "tabShips",
             "cityId": city_id,
             "backgroundView": "city",
             "currentCityId": city_id,
+            "currentTab": "tabShips",
             "actionRequest": self.actionrequest,
             "ajax": 1
         }
-        x = self.s.post(self.link, data=data)
+        temp = [[0, [0]]]
         try:
-            x = x.json()
-        except Exception:
-            raise Exception("Bruh")
+            res = self.s.post(self.index, data=data)
+            temp = res.json()
+            return temp[1][1][1]
+        except TypeError:
+            if temp[0][1][0] == "error":
+                raise ExpiredSession
+        except Exception as e:
+            print(e)
+        return None
+            
