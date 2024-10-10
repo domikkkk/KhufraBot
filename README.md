@@ -1,36 +1,18 @@
 # Bot na discord
-### Przykładowe użycie komend do gry Mobile Legends Bang Bang
-
-- hero_info - wypisuje informacje o bohatrze, tzn: jego wszystkie umiejętności wraz z opisami co robią.
 
 ![](img/image.png)
 
-![](img/image-1.png)
-
-- heroes (Trzeba wybrać co najmniej 1 opcję)
-
-![](img/image2.png)
-
-I na przykład dla tier SS wypisze wszystkich aktualnie najlepszych bohaterów.
-
-![](img/image3.png)
-
-![](img/image4.png)
-
-- item_info - wypisuje informacje na temat podanego itemu
-
-![](img/image5.png)
-
-![](img/image6.png)
-
+Główne działanie to analizowanie rankingu graczy w top 250 i patrzenie czy któryś nie wróci z urlopu.
 
 ### Przykładowe użycie komend do gry Ikariam
 
-- podkupowacz - wyznacza konto na które należy się zalogować, aby mieć szansę podkupić flotę przeciwnika
+- assign - przypisuje wrogi sojusz do nazwy skarbonki. Przy wypisywaniu napisze do kogo należy. W przypadku gdy nie może znaleźć nazwy skarbonki w pamięci może oznaczać, że jej nie ma w rankingu albo został popełniony błąd przy wpisywaniu nazwy.
 
-![](img/image7.png)
+![](img/image3.png)
 
-![](img/image8.png)
+![](img/image2.png)
+
+- update - to działa podobnie jak assign tylko, że czyta z pliku kolejne dane i przypisuje do konkretnej skarbonki.
 
 - garrison - wypisuje limit garnizonu lądowego lub morskiego
 
