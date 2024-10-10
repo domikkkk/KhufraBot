@@ -1,5 +1,6 @@
 import requests
 import numpy as np
+from bs4 import BeautifulSoup
 
 
 class ExpiredSession(Exception):
@@ -20,6 +21,38 @@ def podciąg(s1: str, s2: str):
             else:
                 L[i+1, j+1] = max(L[i+1, j], L[i, j+1])
     return L[m, n]
+
+
+def get_fleet(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    tab_ships_div = soup.find('div', id='tabShips')
+    content = tab_ships_div.find_all('div', class_='contentBox01h')[0]
+    tables = content.find_all('table', class_='militaryList') if tab_ships_div else []
+    ships_data = {}
+    for table in tables:
+        header_row = table.find('tr', class_='title_img_row')
+        # print(header_row, end='\n\n\n')
+        headers = header_row.find_all('div', class_='tooltip') if header_row else []
+        ships = [(header.text, header.find_parent('div').get('class')[1][1:]) for header in headers]
+        count_row = table.find('tr', class_='count')
+        counts = [int(td.text.strip()) for td in count_row.find_all('td')[1:]]
+        for (name, ship_id), count in zip(ships, counts):
+            ships_data[name] = {'id': ship_id, 'count': count}
+    return ships_data
+
+
+def get_fleet_foreign(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    content = soup.find_all('div', class_='contentBox01h')[0]
+    row_troops = content.find_all('td', class_='rowTroop')
+    units = []
+    for row in row_troops:
+        army_buttons = row.find_all('div', class_='fleetbutton')
+        for button in army_buttons:
+            unit_name = button.get('title')
+            unit_count = int(button.text.strip())
+            units.append((unit_name, unit_count))
+    return units
 
 
 class IkaBot:
@@ -161,7 +194,7 @@ class IkaBot:
         try:
             res = self.s.post(self.index, data=data)
             temp = res.json()
-            return temp[1][1][1]
+            return get_fleet(temp[1][1][1])
         except TypeError:
             if temp[0][1][0] == "error":
                 raise ExpiredSession

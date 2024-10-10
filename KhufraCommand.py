@@ -191,15 +191,18 @@ async def check_generals():
     while not Khufra.is_closed():
         try:
             res = await loop.run_in_executor(None, rg_bot.analize_rg, 250)
+            for every_palm in res:
+                if every_palm[1] == -1:
+                    await channel.send(f"{every_palm[0]} poszedł pod :palm_tree:")
+                else:
+                    mes = f"{every_palm[0]} zszedł z urlopu. Rg: {every_palm[1]}."
+                    if every_palm[2]:
+                        mes += f" Czyje: {every_palm[2]}"
+                    await channel.send(mes)
         except ExpiredSession:
             await channel.send(f"<@{ME}> potrzebna nowa sejsa.")
             break
-        for every_palm in res:
-            if every_palm[1] == -1:
-                await channel.send(f"{every_palm[0]} poszedł pod :palm_tree:")
-            else:
-                mes = f"{every_palm[0]} zszedł z urlopu. Rg: {every_palm[1]}."
-                if every_palm[2]:
-                    mes += f" Czyje: {every_palm[2]}"
-                await channel.send(mes)
-        await asyncio.sleep(54)
+        except Exception as e:
+            with open("error.txt", 'w') as f:
+                f.write(e)
+        await asyncio.sleep(55)

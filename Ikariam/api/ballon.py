@@ -8,7 +8,10 @@ class Balonowanie(IkaBot):
         super().__init__(cookie)
         self.destination_city_id = -1
 
-    def get_cities(self, x, y):
+    def set_destination_city(self, id):
+        self.destination_city_id = id
+
+    def get_cities(self, x, y, palm=False):
         if self.actionrequest == '':
             self.set_action_request()
         island_id = self.get_island_id(x, y)
@@ -18,12 +21,11 @@ class Balonowanie(IkaBot):
         posibilities = {}
         i = 0
         for city in cities:
-            if city["state"] != "":
+            if palm and city["state"] != "":
                 continue
             posibilities[i] = (city["id"], city["name"], city["ownerName"])
             i += 1
         return posibilities
-
 
 
 if __name__ == "__main__":

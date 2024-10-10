@@ -90,7 +90,7 @@ class rgBot(IkaBot):
 
     def guess_rg_holder(self, name):
         for rg_name in self.rg_info.keys():
-            if podciąg(rg_name, name) / len(rg_name) > 0.8:
+            if podciąg(rg_name, name) / max(len(rg_name), len(name)) > 0.85:
                 return rg_name
         return None
 
