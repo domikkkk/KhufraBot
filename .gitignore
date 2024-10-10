@@ -13,3 +13,6 @@ setup.py
 MANIFEST.in
 Ikariam/api/Cookie.py
 *.txt
+stronka/node_modules
+stronka/build
+stronka/package-lock.json
