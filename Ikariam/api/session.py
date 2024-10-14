@@ -61,9 +61,19 @@ class IkaBot:
         self.index = "https://s62-pl.ikariam.gameforge.com/index.php"
         self.link = "https://s62-pl.ikariam.gameforge.com"
         self.s.headers = {
-            "cookie": cookie,
+            "Cookie": cookie,
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
-            "x-requested-with": "XMLHttpRequest"
+            "x-requested-with": "XMLHttpRequest",
+            "Host": "s62-pl.ikariam.gameforge.com",
+            "Connection": "keep-alive",
+            "Cache-Control": "max-age=0",
+            "Accept-Language": "pl-PL,pl;q=0.9,en-US;q=0.8,en;q=0.7",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "Accept-Encoding": "gzip, deflate, br, zstd",
+            "Sec-Ch-Ua-Platform": "Windows",
+            "Sec-Fetch-Mode": "navigate",
+            "Upgrade-Insecure-Requests": "1"
+            
         }
         self.actionrequest = ''
         self.dict_of_cities = {}
@@ -108,28 +118,33 @@ class IkaBot:
             city["relationship"] = city["relationship"] == "ownCity"
             self.dict_of_cities[city_id] = city
 
-    def get_island_id(self, x, y):
+    def get_islands(self, x, y, radius=0):
         data = {
             "action": "WorldMap",
             "function": "getJSONArea",
-            "x_min": x,
-            "x_max": x,
-            "y_min": y,
-            "y_max": y,
+            "x_min": x - radius,
+            "x_max": x + radius,
+            "y_min": y - radius,
+            "y_max": y + radius,
         }
         temp = [[0, [0]]]
         try:
             res = self.s.post(self.index, data=data)
             temp = res.json()
             temp = temp["data"]
-            if len(temp) < 1:
-                return -1
-            island_id = temp[str(x)][str(y)][0]
+            return temp
         except TypeError:
             if temp[0][1][0] == "error":
                 raise ExpiredSession
         except Exception as e:
             print(e)
+        return None
+
+    def get_island_id(self, x, y):
+        island = self.get_islands(x, y, radius=0)
+        if len(island) < 1:
+                return -1
+        island_id = island[str(x)][str(y)][0]
         return int(island_id)
 
     def get_island_info(self, island_id):

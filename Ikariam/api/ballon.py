@@ -1,4 +1,4 @@
-from session import ExpiredSession, IkaBot
+from Ikariam.api.session import ExpiredSession, IkaBot
 import requests
 from Cookie import cookie4
 

@@ -1,4 +1,4 @@
-from ballon import Balonowanie
+from Ikariam.api.ballon import Balonowanie
 from session import ExpiredSession
 
 

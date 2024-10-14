@@ -1,0 +1,3 @@
+include Ikariam/C/ika.so
+include mlbb/*.json
+include Jap/*.json
