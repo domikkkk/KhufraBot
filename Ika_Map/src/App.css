@@ -2,22 +2,3 @@
   text-align: center;
   margin: 20px;
 }
-
-.map-table {
-  border-collapse: collapse;
-  margin: 0 auto;
-}
-
-.map-table td {
-  width: 5px;
-  height: 5px;
-  border: 1px solid #000;
-}
-
-.island {
-  background-color: #228B22; /* Zielony kolor dla wysp */
-}
-
-.water {
-  background-color: #ADD8E6; /* Jasnoniebieski kolor dla wody */
-}
