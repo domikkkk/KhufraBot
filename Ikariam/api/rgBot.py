@@ -3,6 +3,8 @@ import json
 import requests
 import re
 from http.client import IncompleteRead
+import time
+import random
 
 
 class rgBot(IkaBot):
@@ -86,6 +88,8 @@ class rgBot(IkaBot):
             if len(matches) < 50:
                 break
             i += 1
+            time_to_sleep = random.randint(8, 20)
+            time.sleep(time_to_sleep)
         return every_not_on_palm
 
     def guess_rg_holder(self, name):

@@ -11,7 +11,7 @@ dist
 *.egg*
 Ikariam/api/Cookie.py
 data.txt
-stronka/node_modules
-stronka/build
-stronka/package-lock.json
-stronka/Cookie.py
+Ika_Map/node_modules
+Ika_Map/build
+Ika_Map/package-lock.json
+Ika_Map/Cookie.py
