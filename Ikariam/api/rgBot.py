@@ -5,6 +5,7 @@ import re
 from http.client import IncompleteRead
 import time
 import random
+# from Cookie import cookie2
 
 
 class rgBot(IkaBot):
@@ -117,3 +118,8 @@ class rgBot(IkaBot):
     def save_as(self):
         with open("rg_info.json", "w") as f:
             json.dump(self.rg_info, f, indent=4)
+
+
+# if __name__ == "__main__":
+#     a = rgBot(cookie2)
+#     a.set_action_request()

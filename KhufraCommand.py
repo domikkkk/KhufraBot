@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from Common import ME, CHANNEL
+from Ika_Map.Islands import Map
 from Ikariam.Islands import calc
 from Jap.keyboard import parse_foreach
 import time
@@ -48,6 +49,9 @@ async def on_ready():
     print(len(synced))
     # global w
     # w = Wyspy()
+    global map
+    map = Map("Ika_Map/islands.json")
+    map.scan_players()
     global rg_bot
     rg_bot = rgBot(cookie)
     Khufra.loop.create_task(check_generals())
@@ -205,4 +209,4 @@ async def check_generals():
         except Exception as e:
             with open("error.txt", 'w') as f:
                 f.write(e)
-        await asyncio.sleep(55)
+        #await asyncio.sleep(55)
