@@ -37,7 +37,7 @@ async def error(interaction: discord.Interaction, e: Exception):
         canal = interaction.channel_id
     function = interaction.command.name
     await me.send(f'Osoba {person} na kanale {canal}\
-        miała problem z funkcją\
+miała problem z funkcją\
     {function} o godzinie {datetime.now()}:\n{e}')
 
 
@@ -63,6 +63,7 @@ async def on_ready():
 ])
 async def update(interaction: discord.Interaction, rg: app_commands.Choice[int]):
     global map
+    global rg_bot
     try:
         if not rg.value:
             map.read_file()
