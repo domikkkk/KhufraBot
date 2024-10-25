@@ -98,7 +98,7 @@ class rgBot(IkaBot):
         for rg_name in self.rg_info.keys():
             score = podciąg(rg_name, name) / max(len(rg_name), len(name))
             if score > 0.85:
-                return possibilities.append((rg_name, score))
+                possibilities.append((rg_name, score))
         possibilities.sort(key=lambda x: x[1], reverse=True)
         return possibilities
 
@@ -117,7 +117,7 @@ class rgBot(IkaBot):
             if len(rg_names) == 0:
                 bugs.append(line)
                 continue
-            rg_name = rg_names[0]
+            rg_name = rg_names[0][0]
             self.rg_info[rg_name]["whose"] = owner
             res = (owner, rg_name)
         return res, bugs

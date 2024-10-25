@@ -229,7 +229,7 @@ async def check_generals():
                         mes += f" Czyje: {every_palm[2]}"
                     await channel.send(mes)
         except ExpiredSession:
-            await channel.send(f"<@{ME}> potrzebna nowa sejsa.")
+            await channel.send(f"<@{ME}> potrzebna nowa sesja.")
             break
         except Exception as e:
             with open("error.txt", 'w') as f:
