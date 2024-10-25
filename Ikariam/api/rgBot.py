@@ -94,25 +94,33 @@ class rgBot(IkaBot):
         return every_not_on_palm
 
     def guess_rg_holder(self, name):
+        possibilities = []
         for rg_name in self.rg_info.keys():
-            if podciąg(rg_name, name) / max(len(rg_name), len(name)) > 0.85:
-                return rg_name
-        return None
+            score = podciąg(rg_name, name) / max(len(rg_name), len(name))
+            if score > 0.85:
+                return possibilities.append((rg_name, score))
+        possibilities.sort(key=lambda x: x[1], reverse=True)
+        return possibilities
 
     def load_owners(self, text: str):
         bugs = []
+        res = None
         for line in text.split('\n'):
+            if len(line) == 0:
+                continue
             line1 = line.split(' - ')
             if len(line1) != 2:
                 bugs.append(line)
                 continue
             name, owner = line1
-            rg_name = self.guess_rg_holder(name)
-            if not rg_name:
+            rg_names = self.guess_rg_holder(name)
+            if len(rg_names) == 0:
                 bugs.append(line)
                 continue
+            rg_name = rg_names[0]
             self.rg_info[rg_name]["whose"] = owner
-        return bugs
+            res = (owner, rg_name)
+        return res, bugs
             
 
     def save_as(self):

@@ -25,8 +25,12 @@ def podciąg(s1: str, s2: str):
 
 class Map:
     def __init__(self, file) -> None:
-        self.map = read_file(file)
+        self.filename = file
+        self.map = self.read_file()
         self.players = {}
+
+    def read_file(self):
+        self.map = read_file(self.filename)
 
     def scan_players(self):
         self.players = {}
@@ -47,3 +51,9 @@ class Map:
                 respond.append((player, self.players[player], score))
         respond.sort(key=lambda x: x[2], reverse=True)
         return respond
+
+
+if __name__ == "__main__":
+    map = Map('islands.json')
+    map.scan_players()
+    print(map.get_coords('sir kacper'))

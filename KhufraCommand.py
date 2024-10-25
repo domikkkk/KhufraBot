@@ -1,3 +1,4 @@
+from re import L
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -26,19 +27,16 @@ Khufra = commands.Bot(command_prefix='?', intents=intents)
 
 
 async def error(interaction: discord.Interaction, e: Exception):
-    member = interaction.client.get_user(ME)
+    me = interaction.client.get_user(ME)
     await interaction.response.send_message(f'Coś poszło nie tak ... {e}',
                                             ephemeral=True)
-    try:
-        person = interaction.user.nick
-    except Exception:
-        person = interaction.user.name
+    person = interaction.user.global_name
     try:
         canal = interaction.channel.name
     except Exception:
         canal = interaction.channel_id
     function = interaction.command.name
-    await member.send(f'Osoba {person} na kanale {canal}\
+    await me.send(f'Osoba {person} na kanale {canal}\
         miała problem z funkcją\
     {function} o godzinie {datetime.now()}:\n{e}')
 
@@ -58,15 +56,26 @@ async def on_ready():
 
 
 @Khufra.tree.command()
-async def update(interaction: discord.Interaction):
+@app_commands.describe(rg="Czy zaktualizować rg?")
+@app_commands.choices(rg=[
+    app_commands.Choice(name=True, value=True),
+    app_commands.Choice(name=False, value=False),
+])
+async def update(interaction: discord.Interaction, rg: app_commands.Choice[int]):
+    global map
     try:
-        me = Khufra.get_user(ME)
-        with open("HH.txt", "r") as f:
-            text = f.read()
-            res = rg_bot.load_owners(text)
-        await interaction.response.send_message("Pomyślnie zaktualizowano")
-        for line in res:
-            await me.send(line)
+        if not rg.value:
+            map.read_file()
+            map.scan_players()
+            await interaction.response.send_message("Zaktualizowano graczy z pliku")
+        else:
+            me = Khufra.get_user(ME)
+            with open("HH.txt", "r") as f:
+                text = f.read()
+                _, bugs = rg_bot.load_owners(text)
+            await interaction.response.send_message("Zaktualizowano skarbony")
+            for line in bugs:
+                await me.send(line)
     except Exception as e:
         await error(interaction, e)
 
@@ -176,13 +185,28 @@ async def a_p(interaction: discord.Interaction, r: int):
 async def assign(interaction: discord.Interaction, text: str):
     global rg_bot
     try:
-        res = rg_bot.load_owners(text)
-        if len(res) > 0:
-            await interaction.response.send_message("Nie można dopasować niektórych skarbonek:")
-            for line in res:
-                await interaction.channel.send(line)
+        res, bugs = rg_bot.load_owners(text)
+        if len(bugs) > 0:
+            await interaction.response.send_message(f"Nie można dopasować: {bugs[0]}")
         else:
-            await interaction.response.send_message("Pomyślnie zaktualizowano")
+            await interaction.response.send_message(f"Pomyślnie przypisano {res[0]} do {res[1]}")
+    except Exception as e:
+        await error(interaction, e)
+
+
+@Khufra.tree.command(description="Wypisuje znane kordy podane gracza")
+@app_commands.describe(nick="Gracz, którego kordy chcemy poznać")
+async def find(interaction: discord.Interaction, nick: str):
+    global map
+    try:
+        players = map.get_coords(nick)
+        if len(players) == 0:
+            res = f'Nie znaleziono żadnego podobnego gracza o podanym nicku: {nick}'
+        else:
+            res = ''
+            for player, coords, _ in players:
+                res += f'{player}: {coords}\n'
+        await interaction.response.send_message(res)
     except Exception as e:
         await error(interaction, e)
 
