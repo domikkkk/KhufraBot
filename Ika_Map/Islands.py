@@ -26,7 +26,7 @@ def podciąg(s1: str, s2: str):
 class Map:
     def __init__(self, file) -> None:
         self.filename = file
-        self.map = self.read_file()
+        self.read_file()
         self.players = {}
 
     def read_file(self):
@@ -54,6 +54,6 @@ class Map:
 
 
 if __name__ == "__main__":
-    map = Map('islands.json')
+    map = Map('Ika_Map/islands.json')
     map.scan_players()
     print(map.get_coords('sir kacper'))
