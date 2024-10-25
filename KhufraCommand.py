@@ -196,7 +196,7 @@ async def assign(interaction: discord.Interaction, text: str):
 
 @Khufra.tree.command(description="Wypisuje znane kordy podane gracza")
 @app_commands.describe(nick="Gracz, którego kordy chcemy poznać")
-async def find(interaction: discord.Interaction, nick: str):
+async def player(interaction: discord.Interaction, nick: str):
     global map
     try:
         players = map.get_coords(nick)
