@@ -1,11 +1,10 @@
-from Ikariam.api.session import IkaBot, ExpiredSession, podciąg
+from Ikariam.api.session import IkaBot, ExpiredSession, ensure_action_request, podciąg
 import json
 import requests
 import re
 from http.client import IncompleteRead
 import time
 import random
-# from Cookie import cookie2
 
 
 class rgBot(IkaBot):
@@ -13,6 +12,7 @@ class rgBot(IkaBot):
         super().__init__(cookie)
         self.rg_info = {}
 
+    @ensure_action_request
     def get_rg_highscore(self, place, user=''):
         data = {
             "highscoreType": "army_score_main",  # score
@@ -42,7 +42,6 @@ class rgBot(IkaBot):
             return None
         except Exception:
             return None
-        
 
     def put_match(self, match):
         palmtree = True if 'This player is currently on vacation' in match or 'Gracz jest obecnie na urlopie' in match else False
@@ -121,8 +120,3 @@ class rgBot(IkaBot):
     def save_as(self):
         with open("rg_info.json", "w") as f:
             json.dump(self.rg_info, f, indent=4)
-
-
-# if __name__ == "__main__":
-#     a = rgBot(cookie2)
-#     a.set_action_request()

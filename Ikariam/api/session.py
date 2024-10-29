@@ -1,6 +1,7 @@
 import requests
 import numpy as np
 from bs4 import BeautifulSoup
+from functools import wraps
 
 
 class ExpiredSession(Exception):
@@ -55,6 +56,15 @@ def get_fleet_foreign(html):
     return units
 
 
+def ensure_action_request(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if not self.actionrequest:
+            self.set_action_request()
+        return func(self, *args, **kwargs)
+    return wrapper
+
+
 class IkaBot:
     def __init__(self, cookie) -> None:
         self.s = requests.Session()
@@ -75,7 +85,7 @@ class IkaBot:
             "Upgrade-Insecure-Requests": "1"
             
         }
-        self.actionrequest = ''
+        self.actionrequest = None
         self.dict_of_cities = {}
         self.current_city_id = -1
         self.own_city_type = 'cityMilitary'
@@ -118,6 +128,7 @@ class IkaBot:
             city["relationship"] = city["relationship"] == "ownCity"
             self.dict_of_cities[city_id] = city
 
+    @ensure_action_request
     def get_islands(self, x, y, radius=0):
         data = {
             "action": "WorldMap",
@@ -140,6 +151,7 @@ class IkaBot:
             print(e)
         return None
 
+    @ensure_action_request
     def get_island_id(self, x, y):
         island = self.get_islands(x, y, radius=0)
         if len(island) < 1:
@@ -147,6 +159,7 @@ class IkaBot:
         island_id = island[str(x)][str(y)][0]
         return int(island_id)
 
+    @ensure_action_request
     def get_island_info(self, island_id):
         if island_id < 0:
             return None
@@ -170,6 +183,7 @@ class IkaBot:
             print(e)
         return cities
 
+    @ensure_action_request
     def change_city(self, target_city_id):
         data = {
             "action": "header",
@@ -194,6 +208,7 @@ class IkaBot:
         except Exception as e:
             print(e)
 
+    @ensure_action_request
     def get_city_units(self, city_id):
         data = {
             "view": self.own_city_type if self.dict_of_cities[city_id]["relationship"] else self.foreign_city_type,
