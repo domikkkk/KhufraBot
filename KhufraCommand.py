@@ -64,21 +64,26 @@ async def on_ready():
 async def update(interaction: discord.Interaction, rg: app_commands.Choice[int]):
     global map
     global rg_bot
-    try:
-        if not rg.value:
-            map.read_file()
-            map.scan_players()
-            await interaction.response.send_message("Zaktualizowano graczy z pliku")
-        else:
+    if not rg.value:
+        map.read_file()
+        map.scan_players()
+        await interaction.response.send_message("Zaktualizowano graczy z pliku")
+    else:
+        await interaction.response.defer()
+        try:
             me = Khufra.get_user(ME)
+            bugs = []
             with open("HH.txt", "r") as f:
-                text = f.read()
-                _, bugs = rg_bot.load_owners(text)
-            await interaction.response.send_message("Zaktualizowano skarbony")
-            for line in bugs:
-                await me.send(line)
-    except Exception as e:
-        await error(interaction, e)
+                text = [line.rstrip("\n") for line in f]
+                for line in text:
+                    _, bug = rg_bot.load_owners(line)
+                    if bug is not None:
+                        bugs.append(bug)
+            await interaction.followup.send("Zaktualizowano skarbony")
+            if len(bugs) > 0:
+                await me.send(bugs)
+        except Exception as e:
+            await interaction.followup.send(f'Coś poszło nie tak ... {e}')
 
 
 @Khufra.tree.command(description="Stara się zamienić tekst romaji na zapis w\
@@ -187,8 +192,8 @@ async def assign(interaction: discord.Interaction, text: str):
     global rg_bot
     try:
         res, bugs = rg_bot.load_owners(text)
-        if len(bugs) > 0:
-            await interaction.response.send_message(f"Nie można dopasować: {bugs[0]}")
+        if bugs is not None:
+            await interaction.response.send_message(f"Nie można dopasować: {bugs}")
         else:
             await interaction.response.send_message(f"Pomyślnie przypisano {res[0]} do {res[1]}")
     except Exception as e:
@@ -233,5 +238,5 @@ async def check_generals():
             break
         except Exception as e:
             with open("error.txt", 'w') as f:
-                f.write(e)
+                f.write(str(e))
         #await asyncio.sleep(55)

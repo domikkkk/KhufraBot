@@ -93,7 +93,7 @@ class rgBot(IkaBot):
             time.sleep(time_to_sleep)
         return every_not_on_palm
 
-    def guess_rg_holder(self, name):
+    def guess_rg_holder(self, name) -> list[tuple[str, int]]:
         possibilities = []
         for rg_name in self.rg_info.keys():
             score = podciąg(rg_name, name) / max(len(rg_name), len(name))
@@ -103,24 +103,19 @@ class rgBot(IkaBot):
         return possibilities
 
     def load_owners(self, text: str):
-        bugs = []
         res = None
-        for line in text.split('\n'):
-            if len(line) == 0:
-                continue
-            line1 = line.split(' - ')
-            if len(line1) != 2:
-                bugs.append(line)
-                continue
-            name, owner = line1
-            rg_names = self.guess_rg_holder(name)
-            if len(rg_names) == 0:
-                bugs.append(line)
-                continue
-            rg_name = rg_names[0][0]
-            self.rg_info[rg_name]["whose"] = owner
-            res = (owner, rg_name)
-        return res, bugs
+        line = text.split(' - ')
+        if len(line) != 2:
+            return res, line
+        name, owner = line
+        owner = owner.replace('\n', '')
+        rg_names = self.guess_rg_holder(name)
+        if len(rg_names) == 0:
+            return res, line
+        rg_name = rg_names[0][0]
+        self.rg_info[rg_name]["whose"] = owner
+        res = (owner, rg_name)
+        return res, None
             
 
     def save_as(self):
