@@ -69,8 +69,6 @@ class rgBot(IkaBot):
         return res
 
     def analize_rg(self, top=200, user=''):
-        if self.actionrequest == '':
-            self.set_action_request()
         pattern = r'<tr class="[^"]*".*?</tr>'
         every_not_on_palm = []
         i = 0

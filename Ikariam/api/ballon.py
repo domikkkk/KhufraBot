@@ -12,8 +12,6 @@ class Balonowanie(IkaBot):
         self.destination_city_id = id
 
     def get_cities(self, x, y, palm=False):
-        if self.actionrequest == '':
-            self.set_action_request()
         island_id = self.get_island_id(x, y)
         if island_id == -1:
             raise Exception("Nie ma takiej wyspy")

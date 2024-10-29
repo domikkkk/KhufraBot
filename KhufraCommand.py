@@ -239,4 +239,3 @@ async def check_generals():
         except Exception as e:
             with open("error.txt", 'w') as f:
                 f.write(str(e))
-        #await asyncio.sleep(55)
