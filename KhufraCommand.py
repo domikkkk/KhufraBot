@@ -81,7 +81,8 @@ async def update(interaction: discord.Interaction, rg: app_commands.Choice[int])
             with open("HH.txt", "r") as f:
                 text = [line.rstrip("\n") for line in f]
                 for line in text:
-                    _, bug = rg_bot.load_owners(line)
+                    rg_keeper, owner = line.split(' - ')
+                    _, bug = rg_bot.load_owners(rg_keeper, owner)
                     if bug is not None:
                         bugs.append(bug)
             await interaction.followup.send("Zaktualizowano skarbony")
@@ -191,15 +192,14 @@ async def a_p(interaction: discord.Interaction, r: int):
 
 
 @Khufra.tree.command(description="Przypisuje właścicieli do skarbonek")
-@app_commands.describe(text="Zwykły tekst gdzie każda linia to: nazwa skarbonki -\
-    właściwiel [soj] ewentualnie samo [soj]")
-async def assign(interaction: discord.Interaction, text: str):
+@app_commands.describe(rg_keeper="Nazwa skarbonki, którą chcemy przypisać", owner="Właściciel")
+async def assign(interaction: discord.Interaction, rg_keeper: str, owner: str):
     global rg_bot
     await interaction.response.defer()
     try:
-        res, bugs = rg_bot.load_owners(text)
+        res, bugs = rg_bot.load_owners(rg_keeper, owner)
         if bugs is not None:
-            await interaction.followup.send(f"Nie można dopasować: {bugs}")
+            await interaction.followup.send(f"Nie znaleziono takiej skarbonki {bugs[0]}")
         else:
             await interaction.followup.send(f"Pomyślnie przypisano {res[0]} do {res[1]}")
     except Exception as e:

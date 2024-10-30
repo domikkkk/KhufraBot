@@ -52,6 +52,7 @@ class Map:
 
     def get_coords(self, nick):
         respond = []
+        nick = self.get_mapped(nick)
         for player in self.players:
             score = podciąg(player, nick) / max(len(player), len(nick))
             if score > 0.85:
@@ -71,8 +72,8 @@ class Map:
             island['cities'] = cities
         return island
 
-    def get_mapped(self, ally: str):
+    def get_mapped(self, string: str):
         copy = ''
-        for letter in ally.lower():
+        for letter in string.lower():
             copy += self.different_letters.get(letter, letter)
         return copy.lower()

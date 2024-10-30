@@ -5,6 +5,7 @@ import re
 from http.client import IncompleteRead
 import time
 import random
+from typing import Optional, Tuple
 
 
 class rgBot(IkaBot):
@@ -99,20 +100,13 @@ class rgBot(IkaBot):
         possibilities.sort(key=lambda x: x[1], reverse=True)
         return possibilities
 
-    def load_owners(self, text: str):
-        res = None
-        line = text.split(' - ')
-        if len(line) != 2:
-            return res, line
-        name, owner = line
-        owner = owner.replace('\n', '')
-        rg_names = self.guess_rg_holder(name)
+    def load_owners(self, rg_keeper: str, owner: str) -> Tuple[Optional[Tuple], Optional[str]]:
+        rg_names = self.guess_rg_holder(rg_keeper)
         if len(rg_names) == 0:
-            return res, line
+            return None, (rg_keeper, owner)
         rg_name = rg_names[0][0]
         self.rg_info[rg_name]["whose"] = owner
-        res = (owner, rg_name)
-        return res, None
+        return (owner, rg_name), None
             
 
     def save_as(self):
