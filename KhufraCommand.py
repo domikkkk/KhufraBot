@@ -13,6 +13,7 @@ import asyncio
 from Ikariam.api.Cookie import cookie
 from Ikariam.api.session import ExpiredSession
 from Ikariam.api.rgBot import rgBot
+import random
 
 
 intents = discord.Intents().default()
@@ -24,12 +25,16 @@ intents.reactions = True
 
 # logging.basicConfig(filename="Khufra.log", level=logging.DEBUG, format='%(levelname)s - %(asctime)s - %(message)s')
 Khufra = commands.Bot(command_prefix='?', intents=intents)
+get_color = lambda: random.randint(0, 0xffffff)%(0xffffff+1)
 
 
 async def error(interaction: discord.Interaction, e: Exception):
     me = interaction.client.get_user(ME)
-    await interaction.response.send_message(f'Coś poszło nie tak ... {e}',
-                                            ephemeral=True)
+    message = f'Coś poszło nie tak ... {e}'
+    if interaction.response.is_done():
+        await interaction.followup.send(message, ephemeral=True)
+    else:
+        await interaction.response.send_message(message, ephemeral=True)
     person = interaction.user.global_name
     try:
         canal = interaction.channel.name
@@ -83,7 +88,7 @@ async def update(interaction: discord.Interaction, rg: app_commands.Choice[int])
             if len(bugs) > 0:
                 await me.send(bugs)
         except Exception as e:
-            await interaction.followup.send(f'Coś poszło nie tak ... {e}')
+            await error(interaction, e)
 
 
 @Khufra.tree.command(description="Stara się zamienić tekst romaji na zapis w\
@@ -190,12 +195,13 @@ async def a_p(interaction: discord.Interaction, r: int):
     właściwiel [soj] ewentualnie samo [soj]")
 async def assign(interaction: discord.Interaction, text: str):
     global rg_bot
+    await interaction.response.defer()
     try:
         res, bugs = rg_bot.load_owners(text)
         if bugs is not None:
-            await interaction.response.send_message(f"Nie można dopasować: {bugs}")
+            await interaction.followup.send(f"Nie można dopasować: {bugs}")
         else:
-            await interaction.response.send_message(f"Pomyślnie przypisano {res[0]} do {res[1]}")
+            await interaction.followup.send(f"Pomyślnie przypisano {res[0]} do {res[1]}")
     except Exception as e:
         await error(interaction, e)
 
@@ -204,6 +210,7 @@ async def assign(interaction: discord.Interaction, text: str):
 @app_commands.describe(nick="Gracz, którego kordy chcemy poznać")
 async def player(interaction: discord.Interaction, nick: str):
     global map
+    await interaction.response.defer()
     try:
         players = map.get_coords(nick)
         if len(players) == 0:
@@ -212,7 +219,37 @@ async def player(interaction: discord.Interaction, nick: str):
             res = ''
             for player, coords, _ in players:
                 res += f'{player}: {coords}\n'
-        await interaction.response.send_message(res)
+        await interaction.followup.send(res)
+    except Exception as e:
+        await error(interaction, e)
+
+
+@Khufra.tree.command(description="Wypisuje dane miast z podanej wyspy")
+@app_commands.describe(x="Kordynat x", y="Kordynat y", ally="Sojusz, z którego graczy chcemy wypisać na podanej wyspie. Domyślnie wszystkich wypisze")
+async def island(interaction: discord.Interaction, x: int, y: int, ally: str=''):
+    global map
+    await interaction.response.defer()
+    try:
+        island = map.get_cities_from_island(x, y, ally=ally)
+        if not island:
+            await interaction.followup.send(f"Nie ma wyspy o podanych kordach {x}:{y}")
+            return
+        cities = island['cities']
+        embed = discord.Embed(
+            title=f"Info o wyspie {x}:{y}",
+            description=f"{island['name']} {island['id']}",
+            color=get_color(),
+            timestamp=datetime.now()
+        )
+        for i, city in enumerate(cities):
+            name = f"{i+1}: {city['name']}"
+            ally = city.get("ownerAllyTag", None)
+            description = f"{city['ownerName']}"
+            if ally:
+                description += f" [{ally}]"
+            embed.add_field(name=name, value=description, inline=True)
+            # embed.set_footer(text=f"Id: {city["id"]}, level: {city['level']}, state: {city["state"]}")
+        await interaction.followup.send(embed=embed)
     except Exception as e:
         await error(interaction, e)
 

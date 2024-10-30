@@ -1,5 +1,8 @@
 import json
 import numpy as np
+from typing import Optional, Dict
+import copy
+import re
 
 
 def read_file(filename):
@@ -28,9 +31,13 @@ class Map:
         self.filename = file
         self.read_file()
         self.players = {}
+        self.different_letters = {
+            'с': 'c',
+            'і': 'i'
+        }
 
     def read_file(self):
-        self.map = read_file(self.filename)
+        self.map: Dict = read_file(self.filename)
 
     def scan_players(self):
         self.players = {}
@@ -52,8 +59,20 @@ class Map:
         respond.sort(key=lambda x: x[2], reverse=True)
         return respond
 
+    def get_cities_from_island(self, x, y, *, ally='') -> Optional[Dict]:
+        y_cords = self.map.get(str(x), None)
+        if not y_cords:
+            return None
+        island = copy.deepcopy(y_cords.get(str(y), None))
+        if not island:
+            return None
+        if ally != '':
+            cities = [city for city in island['cities'] if ally.lower() in self.get_mapped(city.get("ownerAllyTag", ''))]
+            island['cities'] = cities
+        return island
 
-if __name__ == "__main__":
-    map = Map('Ika_Map/islands.json')
-    map.scan_players()
-    print(map.get_coords('sir kacper'))
+    def get_mapped(self, ally: str):
+        copy = ''
+        for letter in ally.lower():
+            copy += self.different_letters.get(letter, letter)
+        return copy.lower()
