@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord import app_commands
 from Common import ME, CHANNEL
 from Ika_Map.Islands import Map
-from Ikariam.Islands import calc
+from Ikariam.queue import calc
 from Jap.keyboard import parse_foreach
 import time
 from datetime import datetime
@@ -55,15 +55,15 @@ async def on_ready():
     map = Map("Ika_Map/islands.json")
     map.scan_players()
     global rg_bot
-    rg_bot = rgBot(cookie)
+    rg_bot = rgBot(cookie, 62)
     Khufra.loop.create_task(check_generals())
 
 
 @Khufra.tree.command()
-@app_commands.describe(rg="Czy zaktualizować rg?")
+@app_commands.describe(rg="Co zaktualizować?")
 @app_commands.choices(rg=[
-    app_commands.Choice(name=True, value=True),
-    app_commands.Choice(name=False, value=False),
+    app_commands.Choice(name="Graczy", value=True),
+    app_commands.Choice(name="Skarbonki", value=False),
 ])
 async def update(interaction: discord.Interaction, rg: app_commands.Choice[int]):
     global map

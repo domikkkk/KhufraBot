@@ -1,12 +1,15 @@
 import discord.ext.commands
-from Common import TEST
+from Common import TEST, TEST_CHANNEL
 from discord.ext import commands
-from discord import app_commands
 import discord
 import random
 from functools import wraps
 from Common import ME
 import discord.ext
+from Ikariam.api.generalBot import General
+from Ikariam.api.session import ExpiredSession
+from Ikariam.api.Cookie import gencookie
+import asyncio
 
 
 intents = discord.Intents().default()
@@ -42,20 +45,29 @@ def restrict_to_guild_name(guild_name: str=None):
 
 @Khufra.event
 async def on_ready():
-    commands = Khufra.tree.get_commands()
-    for c in commands:
-        print(c.name)
-    guild_id = discord.Object(id=1223055963813187625)
-    await Khufra.tree.sync(guild=guild_id)
     synced = await Khufra.tree.sync()
     print(synced)
+    global general
+    general = General(gencookie, 62)
+    Khufra.loop.create_task(check_general())
 
 
-@Khufra.tree.command(name="yolo")
-@restrict_to_guild_name("Testowanie bota")
-async def yolo(interaction: discord.Interaction):
-    await interaction.response.send_message("Witaj chuju")
-
-
+async def check_general():
+    await Khufra.wait_until_ready()
+    global general
+    loop = asyncio.get_running_loop()
+    channel = Khufra.get_channel(TEST_CHANNEL)
+    while not Khufra.is_closed():
+        try:
+            await asyncio.sleep(300)
+            attacks = await loop.run_in_executor(None, general.analize_attacks)
+            for attack in attacks:
+                await channel.send(f"<t:{attack.when}:R> {attack.action} - {attack.who.name+' '+attack.who.f} => {attack.whom.name+' '+attack.whom.f} - units: {attack.units}")
+        except ExpiredSession:
+            await channel.send(f"<@{ME}> potrzebna nowa sesja.")
+            break
+        except Exception as e:
+            with open("error.txt", 'w') as f:
+                f.write(str(e))
 
 Khufra.run(TEST)

@@ -1,3 +1,4 @@
+from typing import Dict, Optional
 import requests
 import numpy as np
 from bs4 import BeautifulSoup
@@ -32,11 +33,10 @@ def get_fleet(html):
     ships_data = {}
     for table in tables:
         header_row = table.find('tr', class_='title_img_row')
-        # print(header_row, end='\n\n\n')
         headers = header_row.find_all('div', class_='tooltip') if header_row else []
         ships = [(header.text, header.find_parent('div').get('class')[1][1:]) for header in headers]
         count_row = table.find('tr', class_='count')
-        counts = [int(td.text.strip()) for td in count_row.find_all('td')[1:]]
+        counts = [td.text.strip() for td in count_row.find_all('td')[1:]]
         for (name, ship_id), count in zip(ships, counts):
             ships_data[name] = {'id': ship_id, 'count': count}
     return ships_data
@@ -51,7 +51,7 @@ def get_fleet_foreign(html):
         army_buttons = row.find_all('div', class_='fleetbutton')
         for button in army_buttons:
             unit_name = button.get('title')
-            unit_count = int(button.text.strip())
+            unit_count = button.text.strip()
             units.append((unit_name, unit_count))
     return units
 
@@ -66,15 +66,15 @@ def ensure_action_request(func):
 
 
 class IkaBot:
-    def __init__(self, cookie) -> None:
+    def __init__(self, cookie, server: int) -> None:
         self.s = requests.Session()
-        self.index = "https://s62-pl.ikariam.gameforge.com/index.php"
-        self.link = "https://s62-pl.ikariam.gameforge.com"
+        self.index = f"https://s{server}-pl.ikariam.gameforge.com/index.php"
+        self.link = f"https://s{server}-pl.ikariam.gameforge.com"
         self.s.headers = {
             "Cookie": cookie,
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
             "x-requested-with": "XMLHttpRequest",
-            "Host": "s62-pl.ikariam.gameforge.com",
+            "Host": f"s{server}-pl.ikariam.gameforge.com",
             "Connection": "keep-alive",
             "Cache-Control": "max-age=0",
             "Accept-Language": "pl-PL,pl;q=0.9,en-US;q=0.8,en;q=0.7",
@@ -83,11 +83,10 @@ class IkaBot:
             "Sec-Ch-Ua-Platform": "Windows",
             "Sec-Fetch-Mode": "navigate",
             "Upgrade-Insecure-Requests": "1"
-            
         }
-        self.actionrequest = None
-        self.dict_of_cities = {}
-        self.current_city_id = -1
+        self.actionrequest: str = None
+        self.dict_of_cities: Dict[int|Dict] = {}
+        self.current_city_id: int = -1
         self.own_city_type = 'cityMilitary'
         self.foreign_city_type = "relatedCities"
 
@@ -151,7 +150,6 @@ class IkaBot:
             print(e)
         return None
 
-    @ensure_action_request
     def get_island_id(self, x, y):
         island = self.get_islands(x, y, radius=0)
         if len(island) < 1:
@@ -184,7 +182,7 @@ class IkaBot:
         return cities
 
     @ensure_action_request
-    def change_city(self, target_city_id):
+    def change_city(self, target_city_id) -> Optional[Dict]:
         data = {
             "action": "header",
             "function": "changeCurrentCity",
@@ -202,11 +200,13 @@ class IkaBot:
             temp = temp[0][1]
             self.actionrequest = temp["actionRequest"]
             self.current_city_id = target_city_id
+            return temp
         except TypeError:
             if temp[0][1][0] == "error":
                 raise ExpiredSession
         except Exception as e:
             print(e)
+        return None
 
     @ensure_action_request
     def get_city_units(self, city_id):
