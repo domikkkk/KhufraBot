@@ -1,5 +1,4 @@
 from Ikariam.api.session import IkaBot
-from Cookie import cookie
 import time
 import random
 import json
@@ -68,10 +67,3 @@ class Scanner:
             res[x][y]["cities"] = cities
         with open(self.path, 'w') as f:
             json.dump(res, f, indent=4)
-
-
-if __name__ == "__main__":
-    bot = IkaBot(cookie)
-    s = Scanner(bot, "Ika_Map/islands.json")
-    bugs = s.run()
-    s.correct(bugs)

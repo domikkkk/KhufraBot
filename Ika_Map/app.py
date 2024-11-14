@@ -2,7 +2,6 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 import random
 from Ikariam.api.session import IkaBot, ExpiredSession
-from Cookie import cookie
 import json
 import time
 
