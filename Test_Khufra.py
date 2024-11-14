@@ -59,7 +59,7 @@ async def check_general():
     channel = Khufra.get_channel(TEST_CHANNEL)
     while not Khufra.is_closed():
         try:
-            await asyncio.sleep(300)
+            await asyncio.sleep(60)
             attacks = await loop.run_in_executor(None, general.analize_attacks)
             for attack in attacks:
                 await channel.send(f"<t:{attack.when}:R> {attack.action} - {attack.who.name+' '+attack.who.f} => {attack.whom.name+' '+attack.whom.f} - units: {attack.units}")
