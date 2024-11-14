@@ -89,8 +89,6 @@ class General(IkaBot):
         try:
             response = self.s.post(self.link, data=data).json()
             self.actionrequest = response[0][1]["actionRequest"]
-            with open("res.html", 'w') as f:
-                f.write(response[1][1][1])
             return get_attacks(response[1][1][1])
         except requests.exceptions.RequestException:
             return None
@@ -137,6 +135,8 @@ class General(IkaBot):
 
     def analize_attacks(self) -> List[Attack]:
         attacks = self.get_attacks()
+        if not attacks:
+            return []
         to_show = []
         for attack in attacks.occupy:
             if not attack in self.occupy:
