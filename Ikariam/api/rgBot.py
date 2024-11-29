@@ -9,8 +9,8 @@ from typing import Optional, Tuple
 
 
 class rgBot(IkaBot):
-    def __init__(self, cookie) -> None:
-        super().__init__(cookie)
+    def __init__(self, cookie, server) -> None:
+        super().__init__(cookie, server)
         self.rg_info = {}
 
     @ensure_action_request

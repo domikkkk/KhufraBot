@@ -1,6 +1,6 @@
 import json
 import numpy as np
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Tuple
 import copy
 from dataclasses import dataclass
 
@@ -30,7 +30,7 @@ class Player:
     cities: List[City]
 
 
-@dataclass(frozen=True)
+@dataclass()
 class Island:
     id: int
     name: str
@@ -63,7 +63,7 @@ class Map:
     def __init__(self, file) -> None:
         self.filename = file
         self.read_file()
-        self.players = {}
+        self.players: Dict[str|List[Pos]] = {}
         self.different_letters = {
             'с': 'c',
             'і': 'i'
@@ -73,7 +73,7 @@ class Map:
         return read_file(self.filename)
 
     def scan_map(self):
-        self.players = {}
+        self.players: Dict[str|List[Pos]] = {}
         map = read_file(self.filename)
         self.map: Dict[Pos|Island] = {}
         self.cities: Dict[int|Pos] = {}
@@ -102,21 +102,21 @@ class Map:
         for player in self.players:
             self.players[player] = list(set(self.players[player]))
 
-    def get_coords(self, nick):
+    def get_coords(self, nick) -> List[Tuple[str|List[Pos]]]:
         respond = []
         nick = self.get_mapped(nick)
         for player in self.players:
             score = podciąg(player, nick) / max(len(player), len(nick))
             if score > 0.85:
-                respond.append((player, self.players[player], score))
+                respond.append((player, ["{}:{}".format(pos.x, pos.y) for pos in self.players[player]], score))
         respond.sort(key=lambda x: x[2], reverse=True)
         return respond
 
-    def get_cities_from_island(self, x, y, *, ally='') -> Optional[Dict]:
+    def get_cities_from_island(self, x, y, *, ally='') -> Optional[Island]:
         island: Island = copy.deepcopy(self.map.get(Pos(x, y), None))
         if ally != '':
             cities = [city for city in island.cities if ally.lower() in self.get_mapped(city.AllyTag)]
-            island = cities
+            island.cities = cities
         return island
 
     def get_mapped(self, string: str):

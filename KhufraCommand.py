@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from Common import ME, CHANNEL
-from Ika_Map.Islands import Map
+from Ikariam.Islands import Map
 from Ikariam.queue import calc
 from Jap.keyboard import parse_foreach
 import time
@@ -53,7 +53,7 @@ async def on_ready():
     # w = Wyspy()
     global map
     map = Map("Ika_Map/islands.json")
-    map.scan_players()
+    map.scan_map()
     global rg_bot
     rg_bot = rgBot(cookie, 62)
     Khufra.loop.create_task(check_generals())
@@ -68,9 +68,8 @@ async def on_ready():
 async def update(interaction: discord.Interaction, rg: app_commands.Choice[int]):
     global map
     global rg_bot
-    if not rg.value:
-        map.read_file()
-        map.scan_players()
+    if rg.value:
+        map.scan_map()
         await interaction.response.send_message("Zaktualizowano graczy z pliku")
     else:
         await interaction.response.defer()
@@ -233,17 +232,17 @@ async def island(interaction: discord.Interaction, x: int, y: int, ally: str='')
         if not island:
             await interaction.followup.send(f"Nie ma wyspy o podanych kordach {x}:{y}")
             return
-        cities = island['cities']
+        cities = island.cities
         embed = discord.Embed(
             title=f"Info o wyspie {x}:{y}",
-            description=f"{island['name']} {island['id']}",
+            description=f"{island.name} {island.id}",
             color=get_color(),
             timestamp=datetime.now()
         )
         for i, city in enumerate(cities):
-            name = f"{i+1}: {city['name']}"
-            ally = city.get("ownerAllyTag", None)
-            description = f"{city['ownerName']}"
+            name = f"{i+1}: {city.name}"
+            ally = city.AllyTag
+            description = f"{city.owenrName}"
             if ally:
                 description += f" [{ally}]"
             embed.add_field(name=name, value=description, inline=True)
