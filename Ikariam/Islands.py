@@ -79,7 +79,7 @@ class Map:
         self.cities: Dict[int|Pos] = {}
         for x in map:
             for y in map[x]:
-                pos = Pos(x, y)
+                pos = Pos(int(x), int(y))
                 island = Island(map[x][y]["id"], map[x][y]["name"], None, pos)
                 cities = []
                 for city in map[x][y]["cities"]:
