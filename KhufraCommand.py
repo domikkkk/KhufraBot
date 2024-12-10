@@ -13,6 +13,9 @@ from Ikariam.api.Cookie import cookie
 from Ikariam.api.session import ExpiredSession
 from Ikariam.api.rgBot import rgBot
 import random
+import json
+from typing import Dict
+from decorators import restrict_to_guilds
 
 
 intents = discord.Intents().default()
@@ -25,6 +28,9 @@ intents.reactions = True
 # logging.basicConfig(filename="Khufra.log", level=logging.DEBUG, format='%(levelname)s - %(asctime)s - %(message)s')
 Khufra = commands.Bot(command_prefix='?', intents=intents)
 get_color = lambda: random.randint(0, 0xffffff)%(0xffffff+1)
+
+with open("config.json", 'r') as f:
+    guilds: Dict[int, Dict] = {int(id): item for id, item in json.load(f).items()}
 
 
 async def error(interaction: discord.Interaction, e: Exception):
@@ -40,38 +46,46 @@ async def error(interaction: discord.Interaction, e: Exception):
     except Exception:
         canal = interaction.channel_id
     function = interaction.command.name
-    await me.send(f'Osoba {person} na kanale {canal}\
-miała problem z funkcją\
+    await me.send(f'Osoba {person} na kanale {canal} miała problem z funkcją\
     {function} o godzinie {datetime.now()}:\n{e}')
+
+
+def create_maps() -> Dict[int, Dict]:
+    maps: Dict[int, Map] = {}
+    for id in guilds:
+        maps[id] = Map(f"Ika_Map/{guilds[id]['id']}.json")
+    return maps
+
+
+maps: Dict[int, Map] = create_maps()
 
 
 @Khufra.event
 async def on_ready():
     synced = await Khufra.tree.sync()
-    print(len(synced))
-    # global w
-    # w = Wyspy()
-    global map
-    map = Map("Ika_Map/islands.json")
-    map.scan_map()
+    print(len(synced))    
     global rg_bot
     rg_bot = rgBot(cookie, 62)
     Khufra.loop.create_task(check_generals())
 
 
 @Khufra.tree.command()
-@app_commands.describe(rg="Co zaktualizować?")
-@app_commands.choices(rg=[
+@app_commands.describe(what="Co zaktualizować?")
+@app_commands.choices(what=[
     app_commands.Choice(name="Graczy", value=True),
     app_commands.Choice(name="Skarbonki", value=False),
 ])
-async def update(interaction: discord.Interaction, rg: app_commands.Choice[int]):
-    global map
+@restrict_to_guilds(guilds)
+async def update(interaction: discord.Interaction, what: app_commands.Choice[int]):
+    global maps
     global rg_bot
-    if rg.value:
-        map.scan_map()
+    if what.value:
+        maps[interaction.guild_id].scan_map()
         await interaction.response.send_message("Zaktualizowano graczy z pliku")
     else:
+        if guilds[interaction.guild_id]["name"] != "Meduza":
+            await interaction.response.send_message(f"Nie ma tu skarbonek", ephemeral=True)
+            return
         await interaction.response.defer()
         try:
             me = Khufra.get_user(ME)
@@ -85,7 +99,8 @@ async def update(interaction: discord.Interaction, rg: app_commands.Choice[int])
                         bugs.append(bug)
             await interaction.followup.send("Zaktualizowano skarbony")
             if len(bugs) > 0:
-                await me.send(bugs)
+                for i in range(len(bugs)//5):
+                    await me.send(bugs[5*i:5*i+5])
         except Exception as e:
             await error(interaction, e)
 
@@ -191,6 +206,7 @@ async def a_p(interaction: discord.Interaction, r: int):
 
 @Khufra.tree.command(description="Przypisuje właścicieli do skarbonek")
 @app_commands.describe(rg_keeper="Nazwa skarbonki, którą chcemy przypisać", owner="Właściciel")
+@restrict_to_guilds(guilds)
 async def assign(interaction: discord.Interaction, rg_keeper: str, owner: str):
     global rg_bot
     await interaction.response.defer()
@@ -206,11 +222,12 @@ async def assign(interaction: discord.Interaction, rg_keeper: str, owner: str):
 
 @Khufra.tree.command(description="Wypisuje znane kordy podane gracza")
 @app_commands.describe(nick="Gracz, którego kordy chcemy poznać")
+@restrict_to_guilds(guilds)
 async def player(interaction: discord.Interaction, nick: str):
-    global map
+    global maps
     await interaction.response.defer()
     try:
-        players = map.get_coords(nick)
+        players = maps[interaction.guild_id].get_coords(nick)
         if len(players) == 0:
             res = f'Nie znaleziono żadnego podobnego gracza o podanym nicku: {nick}'
         else:
@@ -224,11 +241,12 @@ async def player(interaction: discord.Interaction, nick: str):
 
 @Khufra.tree.command(description="Wypisuje dane miast z podanej wyspy")
 @app_commands.describe(x="Kordynat x", y="Kordynat y", ally="Sojusz, z którego graczy chcemy wypisać na podanej wyspie. Domyślnie wszystkich wypisze")
+@restrict_to_guilds(guilds)
 async def island(interaction: discord.Interaction, x: int, y: int, ally: str=''):
-    global map
+    global maps
     await interaction.response.defer()
     try:
-        island = map.get_cities_from_island(x, y, ally=ally)
+        island = maps[interaction.guild_id].get_cities_from_island(x, y, ally=ally)
         if not island:
             await interaction.followup.send(f"Nie ma wyspy o podanych kordach {x}:{y}")
             return
@@ -246,7 +264,6 @@ async def island(interaction: discord.Interaction, x: int, y: int, ally: str='')
             if ally:
                 description += f" [{ally}]"
             embed.add_field(name=name, value=description, inline=True)
-            # embed.set_footer(text=f"Id: {city["id"]}, level: {city['level']}, state: {city["state"]}")
         await interaction.followup.send(embed=embed)
     except Exception as e:
         await error(interaction, e)
@@ -257,9 +274,11 @@ async def check_generals():
     global rg_bot
     loop = asyncio.get_running_loop()
     channel = Khufra.get_channel(CHANNEL)
+    top = 300
+    i = 0
     while not Khufra.is_closed():
         try:
-            res = await loop.run_in_executor(None, rg_bot.analize_rg, 250)
+            res = await loop.run_in_executor(None, rg_bot.analize_rg, 50 * i)
             for every_palm in res:
                 if every_palm[1] == -1:
                     await channel.send(f"{every_palm[0]} poszedł pod :palm_tree:")
@@ -268,9 +287,13 @@ async def check_generals():
                     if every_palm[2]:
                         mes += f" Czyje: {every_palm[2]}"
                     await channel.send(mes)
+            i += 1
+            i = i % (top//50)
         except ExpiredSession:
             await channel.send(f"<@{ME}> potrzebna nowa sesja.")
             break
         except Exception as e:
             with open("error.txt", 'w') as f:
                 f.write(str(e))
+        finally:
+            await asyncio.sleep(random.randint(8, 12))

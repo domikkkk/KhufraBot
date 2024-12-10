@@ -1,17 +1,23 @@
 from Ikariam.api.session import IkaBot, ExpiredSession, ensure_action_request, podciąg
 import json
 import requests
-import re
 from http.client import IncompleteRead
-import time
-import random
-from typing import Optional, Tuple
+from typing import Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from bs4 import BeautifulSoup, Tag
+
+
+@dataclass
+class Rg_Keeper:
+    rg: str
+    palm: bool
+    whose: str=None
 
 
 class rgBot(IkaBot):
     def __init__(self, cookie, server) -> None:
         super().__init__(cookie, server)
-        self.rg_info = {}
+        self.rg_keepers: Dict[str, Rg_Keeper] = {}
 
     @ensure_action_request
     def get_rg_highscore(self, place, user=''):
@@ -44,71 +50,63 @@ class rgBot(IkaBot):
         except Exception:
             return None
 
-    def put_match(self, match):
-        palmtree = True if 'This player is currently on vacation' in match or 'Gracz jest obecnie na urlopie' in match else False
-        pattern = r"<span class='avatarName'>(.*?)</span>"
-        name = re.findall(pattern, match, re.DOTALL)[0]
-        if name in self.rg_info:
-            if palmtree == self.rg_info[name]['palm']:
+    def put_match(self, row: Tag):
+        title = row.get('title')
+        palmtree = True if 'This player is currently on vacation' == title or 'Gracz jest obecnie na urlopie' == title else False
+        name = row.find('span', class_="avatarName").text
+        if name in self.rg_keepers:
+            if palmtree == self.rg_keepers[name].palm:
                 return None
-        pattern = r'<td class="score">(.*?)</td>'
-        score = re.findall(pattern, match, re.DOTALL)[0]
+        rg = row.find('td', class_="score").get('title')
         res = None
-        if name not in self.rg_info:
-            self.rg_info[name] = {
-                "score": score,
-                "palm": palmtree,
-                "whose": None
-            }
+        if name not in self.rg_keepers:
+            self.rg_keepers[name] = Rg_Keeper(rg, palmtree)
         else:
+            self.rg_keepers[name].rg = rg
+            self.rg_keepers[name].palm = palmtree
             if not palmtree:
-                res = [name, score]
+                res = [name, rg]
             else:
                 res = [name, -1]
-            self.rg_info[name]["score"] = score
-            self.rg_info[name]["palm"] = palmtree
         return res
 
-    def analize_rg(self, top=200, user=''):
-        pattern = r'<tr class="[^"]*".*?</tr>'
-        every_not_on_palm = []
-        i = 0
-        while i < int(top) // 50:
-            html = self.get_rg_highscore(i * 50, user)
-            if not html:
-                continue
-            matches = re.findall(pattern, html, re.DOTALL)
-            for match in matches:
-                res = self.put_match(match)
-                if res is not None:
-                    owner_name = self.rg_info[res[0]]["whose"]
-                    res.append(owner_name)
-                    every_not_on_palm.append(res)
-            if len(matches) < 50:
-                break
-            i += 1
-            time_to_sleep = random.randint(8, 20)
-            time.sleep(time_to_sleep)
-        return every_not_on_palm
+    def analize_page(self, html) -> List[List]:
+        soup = BeautifulSoup(html, 'html.parser')
+        table = soup.find('table', class_='table01 highscore')
+        every_changed = []
+        trs: List[Tag] = table.find_all('tr')
+        for row in trs[1:]:
+            res = self.put_match(row)
+            if res is not None:
+                owner_name = self.rg_keepers[res[0]].whose
+                res.append(owner_name)
+                every_changed.append(res)
+        return every_changed
+
+    def analize_rg(self, place, user=''):
+        html = self.get_rg_highscore(place, user)
+        if not html:
+            return []
+        every_changed = self.analize_page(html)
+        return every_changed
 
     def guess_rg_holder(self, name) -> list[tuple[str, int]]:
         possibilities = []
-        for rg_name in self.rg_info.keys():
+        for rg_name in self.rg_keepers.keys():
             score = podciąg(rg_name, name) / max(len(rg_name), len(name))
             if score > 0.85:
                 possibilities.append((rg_name, score))
         possibilities.sort(key=lambda x: x[1], reverse=True)
         return possibilities
 
-    def load_owners(self, rg_keeper: str, owner: str) -> Tuple[Optional[Tuple], Optional[str]]:
+    def load_owners(self, rg_keeper: str, owner: str) -> Tuple[Optional[Tuple], Optional[Tuple]]:
         rg_names = self.guess_rg_holder(rg_keeper)
         if len(rg_names) == 0:
             return None, (rg_keeper, owner)
         rg_name = rg_names[0][0]
-        self.rg_info[rg_name]["whose"] = owner
+        self.rg_keepers[rg_name].whose = owner
         return (owner, rg_name), None
-            
 
     def save_as(self):
         with open("rg_info.json", "w") as f:
-            json.dump(self.rg_info, f, indent=4)
+            json.dump(self.rg_keepers, f, indent=4)

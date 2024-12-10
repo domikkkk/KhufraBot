@@ -62,18 +62,14 @@ def podciąg(s1: str, s2: str):
 class Map:
     def __init__(self, file) -> None:
         self.filename = file
-        self.read_file()
         self.players: Dict[str|List[Pos]] = {}
         self.different_letters = {
             'с': 'c',
             'і': 'i'
         }
 
-    def read_file(self):
-        return read_file(self.filename)
-
     def scan_map(self):
-        self.players: Dict[str|List[Pos]] = {}
+        self.players: Dict[str, List[Pos]] = {}
         map = read_file(self.filename)
         self.map: Dict[Pos|Island] = {}
         self.cities: Dict[int|Pos] = {}
