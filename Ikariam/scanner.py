@@ -38,8 +38,8 @@ class Scanner:
                     city.pop("infestedByPlague", None)
                 cities = [city for city in cities if city["id"] != -1]
                 islands[x][y]["cities"] = cities
-        with open(self.path, "w") as f:
-            json.dump(islands, f, indent=4)
+            with open(self.path, "w") as f:
+                json.dump(islands, f, indent=4)
         return bugs
 
     def correct(self, bugs):

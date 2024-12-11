@@ -1,6 +1,6 @@
 from typing import List, Optional
 from Ikariam.api.session import ExpiredSession, IkaBot, ensure_action_request
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 import requests
 from http.client import IncompleteRead
 from dataclasses import dataclass
@@ -46,6 +46,9 @@ def get_attacks(html) -> List[Attack]:
     table = mainview.find('table', class_="embassyTable")
     attacks = []
     for row in table.find_all('tr')[1:]:
+        row: Tag
+        if "No members of your alliance are being attacked at the moment." in row.text:
+            break
         cells = row.find_all('td')
         date = get_date(cells[0])
         who = Player(*[clean_whitespace(x.text) for x in cells[3].find_all('a', class_="bold")])
