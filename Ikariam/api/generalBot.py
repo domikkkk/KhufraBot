@@ -32,33 +32,33 @@ class Attacks:
 
 @dataclass
 class Troops:
-    hoplita: int
-    gigant: int
-    oszczep: int
-    wojownik: int
-    procarz: int
-    łucznik: int
-    strzelec: int
-    taran: int
+    hoplici: int
+    giganty: int
+    oszczepy: int
+    wojownicy: int
+    procarze: int
+    lucznicy: int
+    strzelcy: int
+    tarany: int
     katapulty: int
-    moździerze: int
+    mozdzierze: int
     zyrki: int
     balony: int
-    kucharz: int
-    medyk: int
-    spartan: int
+    kucharze: int
+    medycy: int
+    spartanie: int
 
 
 @dataclass
 class Fleets:
-    miotacz: int
+    miotacze: int
     parowy: int
-    zwykly: int
+    taranki: int
     balisty: int
     katapulty: int
     mozdzierze: int
-    krazek: int
-    podwodny: int
+    rakiety: int
+    podwodne: int
     smigi: int
     balony: int
     pomoce: int

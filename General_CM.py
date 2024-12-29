@@ -12,7 +12,6 @@ import asyncio
 from typing import Dict
 import json
 from decorators import restrict_to_guilds
-from table2ascii import table2ascii as t2a, PresetStyle
 from datetime import datetime
 from dataclasses import asdict
 
@@ -71,19 +70,22 @@ async def on_ready():
 async def get_units(interaction: discord.Interaction, what: app_commands.Choice[int]):
     global generals
     await interaction.response.defer()
-    MAX_ROWS = 6
     try:
         units = generals[interaction.guild_id].check_alliance_units(what.value)
-        header = ["Gracz"] + list(asdict(list(units.values())[0]).keys())
-        body = [[player] + list(asdict(units[player]).values()) for player in units]
-        chunks = [body[i:i + MAX_ROWS] for i in range(0, len(body), MAX_ROWS)]
-        for chunk in chunks:
-            output = t2a(
-                header=header,
-                body=chunk,
-                style=PresetStyle.thin_compact
-            )
-            await interaction.followup.send(f"```\n{output}\n```")
+        units_names = list(asdict(list(units.values())[0]).keys())
+        # body = [[player] + list(asdict(units[player]).values()) for player in units]
+        embed = discord.Embed(
+            title="Ląd sojuszu" if what.value else "Flota sojuszu",
+            color=get_color(),
+            timestamp=datetime.now()
+        )
+        for player in units:
+            to_see = ""
+            for unit_name in units_names:
+                player_units = asdict(units[player])
+                to_see += unit_name+': ' + str(player_units[unit_name]) + ", " if player_units[unit_name] != 0 else ""
+            embed.add_field(name=player, value=f"{to_see[:-2]}", inline=False)
+        await interaction.followup.send(embed=embed)
     except ExpiredSession:
         await interaction.followup.send(f"<@{ME}> potrzebna nowa sesja.")
     except Exception as e:
@@ -100,8 +102,14 @@ async def check_general():
         for id in channels:
             try:
                 attacks = await loop.run_in_executor(None, generals[id].analyse_attacks)
+                players = guilds[id].get("players")
                 for attack in attacks:
-                    await channels[id].send(f"<t:{attack.when}:R> {attack.action} - {attack.who.name+' '+attack.who.f} => {attack.whom.name+' '+attack.whom.f} - units: {attack.units}")
+                    if attack.who.name in "Barbarzyńcy" or attack.units == '1':
+                        continue
+                    whom = attack.whom.name
+                    if players is not None:
+                        whom = f"<@{players[whom]}>"
+                    await channels[id].send(f"<t:{attack.when}:R> {attack.action} - {attack.who.name} {attack.who.f} => {whom} {attack.whom.f} - units: {attack.units}")
             except ExpiredSession:
                 await channels[id].send(f"<@{ME}> potrzebna nowa sesja.")
                 break
