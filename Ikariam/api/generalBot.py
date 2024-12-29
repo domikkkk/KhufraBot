@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Union
 from Ikariam.api.session import ExpiredSession, IkaBot, ensure_action_request
 from bs4 import BeautifulSoup, Tag
 import requests
@@ -30,6 +30,40 @@ class Attacks:
     station: List[Attack]
 
 
+@dataclass
+class Troops:
+    hoplita: int
+    gigant: int
+    oszczep: int
+    wojownik: int
+    procarz: int
+    łucznik: int
+    strzelec: int
+    taran: int
+    katapulty: int
+    moździerze: int
+    zyrki: int
+    balony: int
+    kucharz: int
+    medyk: int
+    spartan: int
+
+
+@dataclass
+class Fleets:
+    miotacz: int
+    parowy: int
+    zwykly: int
+    balisty: int
+    katapulty: int
+    mozdzierze: int
+    krazek: int
+    podwodny: int
+    smigi: int
+    balony: int
+    pomoce: int
+
+
 def get_date(html):
     script_tag = html.find('script', string=True).get_text()
     match = re.search(r'enddate:\s*(\d+)', script_tag)
@@ -56,6 +90,23 @@ def get_attacks(html) -> List[Attack]:
         attack = Attack(date, cells[1].text.strip(), cells[2].text.strip(), who, whom)
         attacks.append(attack)
     return attacks
+
+
+def get_units(html, land=True) -> Dict[str, Optional[Union[Troops, Fleets]]]:
+    soup = BeautifulSoup(html, 'html.parser')
+    mainview = soup.find('div', id='mainview')
+    tables = mainview.find_all('table', class_="table01 embassyTable troops")
+    obj = Troops if land else Fleets
+    units = {}
+    for table in tables:
+        for row in table.find_all('tr')[1:-1]:
+            player_name = row.find('td', class_='left').find('a').get_text(strip=True)
+            if not player_name in units:
+                units[player_name] = []
+            for td in row.find_all('td', class_='right'):
+                units[player_name].append(int(td.get_text(strip=True).replace(',', '')))
+    units = {name: obj(*units[name]) for name in units}
+    return units
 
 
 def ensure_embassy(func):
@@ -136,7 +187,7 @@ class General(IkaBot):
         )
         return attacks
 
-    def analize_attacks(self) -> List[Attack]:
+    def analyse_attacks(self) -> List[Attack]:
         attacks = self.get_attacks()
         if not attacks:
             return []
@@ -147,3 +198,31 @@ class General(IkaBot):
             self.occupy[attack] = True
         self.occupy = {attack: False for attack in self.occupy if self.occupy[attack]}
         return to_show
+
+    @ensure_embassy
+    def check_alliance_units(self, land=True) -> Dict[str, Optional[Union[Troops, Fleets]]]:
+        data = {
+            "view": "embassyGeneralTroops",
+            "cityId": self.current_city_id,
+            "position": self.embassy_position,
+            "activeTab": "tabEmbassy" if land else "tabShips",
+            "backgroundView": "city",
+            "currentCityId": self.current_city_id,
+            "templateView": "embassy",
+            "actionRequest": self.actionrequest,
+            "ajax": 1
+        }
+        response = [[0, [0]]]
+        try:
+            response = self.s.post(self.link, data=data).json()
+            self.actionrequest = response[0][1]["actionRequest"]
+            return get_units(response[1][1][1], land)
+        except requests.exceptions.RequestException:
+            return None
+        except IncompleteRead:
+            return None
+        except TypeError:
+            if response[0][1][0] == "error":
+                raise ExpiredSession
+        except Exception as e:
+            print(e)

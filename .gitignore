@@ -15,3 +15,5 @@ Ika_Map/node_modules
 Ika_Map/build
 Ika_Map/package-lock.json
 Ika_Map/*.json
+config.json
+test.py
