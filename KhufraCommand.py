@@ -14,8 +14,9 @@ from Ikariam.api.session import ExpiredSession
 from Ikariam.api.rgBot import rgBot
 import random
 import json
-from typing import Dict
+from typing import Dict, Tuple
 from decorators import restrict_to_guilds
+import uuid
 
 
 intents = discord.Intents().default()
@@ -59,6 +60,8 @@ def create_maps() -> Dict[int, Dict]:
 
 maps: Dict[int, Map] = create_maps()
 
+tasks: Dict[int, Dict[str, Tuple[asyncio.Task, str, int]]] = {}
+
 
 @Khufra.event
 async def on_ready():
@@ -67,6 +70,69 @@ async def on_ready():
     global rg_bot
     rg_bot = rgBot(cookie, 62)
     Khufra.loop.create_task(check_generals())
+
+
+@Khufra.tree.command(description="Ustawia przypomnienie")
+@app_commands.describe(what="Co przypomnieć?", h="Ile godzin?", m="Ile minut?", s="Ile sekund?")
+async def remindme(interaction: discord.Interaction, what: str, h:int = 0, m:int = 0, s:int = 0):
+    if h == 0 and m == 0 and s == 0:
+        await interaction.response.send_message("Musisz podać czas")
+        return
+    t = 3600 * h + 60 * m + s
+    reminder_id = str(uuid.uuid4())
+    user_id = interaction.user.id
+
+    async def reminder_task():
+        await asyncio.sleep(t)
+        try:
+            await interaction.user.send(f"Przypominam: {what}")
+        except Exception as e:
+            error(interaction, e)
+        if user_id in tasks and reminder_id in tasks[user_id]:
+            del tasks[user_id][reminder_id]
+            if not tasks[user_id]:
+                del tasks[user_id]
+
+    task = asyncio.create_task(reminder_task())
+    if user_id not in tasks:
+        tasks[user_id] = {}
+    tasks[user_id][reminder_id] = task, what, t
+    await interaction.response.send_message(f"Chyba załapałem, więc Ci przypomne {what} <t:{round(time.time()) + t}:R>")
+
+
+@Khufra.tree.command(description="Wyświelta liste aktywnych przypomnień")
+async def remindme_list(interaction: discord.Interaction):
+    user_id = interaction.user.id
+    user_tasks = tasks.get(user_id)
+    if not user_tasks:
+        await interaction.response.send_message("Nie masz żadnych przypomnień")
+        return
+    reminders = '\n'.join([f"{id}\t{task[1]} <t:{round(time.time()) + task[2]}:R>" for id, task in user_tasks.items()])
+    await interaction.response.send_message(f"Twoje przypomnienia:\n{reminders}", ephemeral=True)
+
+
+@Khufra.tree.command(description="Usuwa wskazane przypomnienie")
+@app_commands.describe(uuid="Id przypomnienia")
+async def remindme_remove(interaction: discord.Interaction, uuid: str):
+    user_id = interaction.user.id
+    user_tasks = tasks.get(user_id)
+    if not user_tasks:
+        await interaction.response.send_message("Nie masz żadnych przypomnień", ephemeral=True)
+        return
+    if not uuid in user_tasks:
+        reminders = '\n'.join([f"{id}\t{task[1]} <t:{round(time.time()) + task[2]}:R>" for id, task in user_tasks.items()])
+        await interaction.response.send_message(f"Twoje przypomnienia:\n{reminders}", ephemeral=True)
+        await interaction.followup.send(f"Nie ma takiego {uuid} w powyższej liście", ephemeral=True)
+        return
+    task, what, _ = user_tasks.get(uuid, (None, None, None))
+    if task and not task.done():
+        task.cancel()
+        del user_tasks[uuid]
+        if not user_tasks:
+            del tasks[user_id]
+        await interaction.response.send_message(f"Usunięto przypomnienie {what}", ephemeral=True)
+    else:
+        await interaction.response.send_message("Zadanie się skończyło i nie zostało jeszcze usunięte", ephemeral=True)
 
 
 @Khufra.tree.command()
@@ -160,15 +226,15 @@ async def timer(interaction: discord.Interaction, t: int = 0):
 
 
 @Khufra.tree.command(description="Oblicza limit garnizonu lądowego lub morskiego")
-@app_commands.describe(land="Czy garnizon lądowy?", args="Dla lądowego poziom ratusza i muru,\
+@app_commands.describe(what="Czy garnizon lądowy?", args="Dla lądowego poziom ratusza i muru,\
     dla morskiego max poziomu budynków morskich")
-@app_commands.choices(land=[
-    app_commands.Choice(name=True, value=True),
-    app_commands.Choice(name=False, value=False),
+@app_commands.choices(what=[
+    app_commands.Choice(name="Lądowy", value=True),
+    app_commands.Choice(name="Morski", value=False),
 ])
-async def garrison(interaction: discord.Interaction, land: app_commands.Choice[int], args: str):
+async def garrison(interaction: discord.Interaction, what: app_commands.Choice[int], args: str):
     args = [int(x) for x in args.split()]
-    if land.value:
+    if what.value:
         if len(args) != 2:
             await interaction.response.send_message("Podaj poziom ratusza i muru.")
             return
@@ -176,8 +242,8 @@ async def garrison(interaction: discord.Interaction, land: app_commands.Choice[i
             await interaction.response.send_message("Poziom ratusza nie może być mniejszy\
     od 1, zaś muru od 0", ephemeral=True)
             return
-        land = 250 + sum(args) * 50
-        await interaction.response.send_message(land)
+        what = 250 + sum(args) * 50
+        await interaction.response.send_message(what)
         return
     else:
         if len(args) != 1:
