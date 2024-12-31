@@ -5,6 +5,11 @@ from http.client import IncompleteRead
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 from bs4 import BeautifulSoup, Tag
+import re
+
+
+def extract_brackets(content):
+    return re.findall(r'\[(.*?)\]', content)
 
 
 @dataclass
@@ -110,3 +115,19 @@ class rgBot(IkaBot):
     def save_as(self):
         with open("rg_info.json", "w") as f:
             json.dump(self.rg_keepers, f, indent=4)
+
+    def get_ranking(self) -> Dict[str, int]:
+        ranking: Dict[str, int] = {}
+        for rg_keeper in self.rg_keepers.values():
+            if not rg_keeper.whose:
+                continue
+            whose = extract_brackets(rg_keeper.whose)
+            if not whose:
+                continue
+            rg = int(rg_keeper.rg.replace(',', ''))
+            for every in whose:
+                every = every.lower()
+                if not every in ranking:
+                    ranking[every] = 0
+                ranking[every] += rg
+        return dict(sorted(ranking.items(), key=lambda item: item[1], reverse=True))

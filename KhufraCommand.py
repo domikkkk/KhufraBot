@@ -87,7 +87,7 @@ async def remindme(interaction: discord.Interaction, what: str, h:int = 0, m:int
         try:
             await interaction.user.send(f"Przypominam: {what}")
         except Exception as e:
-            error(interaction, e)
+            await error(interaction, e)
         if user_id in tasks and reminder_id in tasks[user_id]:
             del tasks[user_id][reminder_id]
             if not tasks[user_id]:
@@ -169,6 +169,44 @@ async def update(interaction: discord.Interaction, what: app_commands.Choice[int
                     await me.send(bugs[5*i:5*i+5])
         except Exception as e:
             await error(interaction, e)
+
+
+@Khufra.tree.command(description="Zwraca liste sojuszy wraz z ich rg na skarbonkach")
+@restrict_to_guilds(guilds)
+async def rg_list(interaction: discord.Interaction):
+    if guilds[interaction.guild_id]["name"] != "Meduza":
+        await interaction.response.send_message(f"Nie ma tu skarbonek", ephemeral=True)
+        return
+    await interaction.response.defer()
+    try:
+        ranking = rg_bot.get_ranking()
+        response = "# Ranking rg sojuszy"
+        for ally in ranking:
+            response += f'\n- {ally}\t{ranking[ally]:,}'
+        await interaction.followup.send(response)
+    except Exception as e:
+        await error(interaction, e)
+
+
+@Khufra.tree.command(description="Zwraca właściciela podanej skarbonki o ile istnieje")
+@app_commands.describe(name="Nazwa skarbonki")
+@restrict_to_guilds(guilds)
+async def owner(interaction: discord.Interaction, name: str):
+    if guilds[interaction.guild_id]["name"] != "Meduza":
+        await interaction.response.send_message(f"Nie ma tu skarbonek", ephemeral=True)
+        return
+    await interaction.response.defer()
+    try:
+        rg_keepers = rg_bot.guess_rg_holder(name)
+        if len(rg_keepers) == 0:
+            await interaction.followup.send(f"Nie znaleziono żadnej podobnej skarbonki do {name}")
+            return
+        response = ""
+        for rg_keeper, score in rg_keepers:
+            response += f"{rg_keeper} - {rg_bot.rg_keepers[rg_keeper].whose or 'brak właściciela'} rg: {rg_bot.rg_keepers[rg_keeper].rg}\t{round(score, 2)}\n"
+        await interaction.followup.send(response)
+    except Exception as e:
+        await error(interaction, e)
 
 
 @Khufra.tree.command(description="Stara się zamienić tekst romaji na zapis w\
