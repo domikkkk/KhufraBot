@@ -3,6 +3,7 @@ import requests
 import numpy as np
 from bs4 import BeautifulSoup
 from functools import wraps
+from Ikariam.dataStructure import City, CitiesIsland, UpdateData, SendResources
 
 
 class ExpiredSession(Exception):
@@ -85,7 +86,7 @@ class IkaBot:
             "Upgrade-Insecure-Requests": "1"
         }
         self.actionrequest: str = None
-        self.dict_of_cities: Dict[int|Dict] = {}
+        self.dict_of_cities: Dict[int, City] = {}
         self.current_city_id: int = -1
         self.own_city_type = 'cityMilitary'
         self.foreign_city_type = "relatedCities"
@@ -109,7 +110,6 @@ class IkaBot:
             y = x.json()
             self.actionrequest = y[0][1]["actionRequest"]
             cities = y[0][1]["headerData"]["cityDropdownMenu"]
-            self.is_own = y[0][1]["headerData"]["relatedCity"]["owncity"]
             self.update_cities(cities)
         except TypeError:
             if y[0][1][0] == "error":
@@ -125,7 +125,7 @@ class IkaBot:
                 continue
             city_id = int(city["id"])
             city["relationship"] = city["relationship"] == "ownCity"
-            self.dict_of_cities[city_id] = city
+            self.dict_of_cities[city_id] = City(*city.values())
 
     @ensure_action_request
     def get_islands(self, x, y, radius=0):
@@ -158,7 +158,7 @@ class IkaBot:
         return int(island_id)
 
     @ensure_action_request
-    def get_island_info(self, island_id):
+    def get_island_info(self, island_id) -> Optional[CitiesIsland]:
         if island_id < 0:
             return None
         data = {
@@ -174,15 +174,15 @@ class IkaBot:
             x = self.s.post(self.index, data=data)
             y = x.json()
             cities = y[0][1]["backgroundData"]["cities"]
+            return CitiesIsland(*cities)
         except TypeError:
             if y[0][1][0] == "error":
                 raise ExpiredSession
         except Exception as e:
             print(e)
-        return cities
 
     @ensure_action_request
-    def change_city(self, target_city_id) -> Optional[Dict]:
+    def change_city(self, target_city_id) -> Optional[UpdateData]:
         data = {
             "action": "header",
             "function": "changeCurrentCity",
@@ -197,8 +197,8 @@ class IkaBot:
         try:
             res = self.s.post(self.index, data=data)
             temp = res.json()
-            temp = temp[0][1]
-            self.actionrequest = temp["actionRequest"]
+            temp = UpdateData(**temp[0][1])
+            self.actionrequest = temp.actionRequest
             self.current_city_id = target_city_id
             return temp
         except TypeError:
@@ -209,9 +209,79 @@ class IkaBot:
         return None
 
     @ensure_action_request
-    def get_city_units(self, city_id):
+    def upgrade_building(self, position, old_level, building_name) -> Optional[UpdateData]:
         data = {
-            "view": self.own_city_type if self.dict_of_cities[city_id]["relationship"] else self.foreign_city_type,
+            "action": "CityScreen",
+            "function": "upgradeBuilding",
+            "actionRequest": self.actionrequest,
+            "cityId": self.current_city_id,
+            "position": position,
+            "level": old_level,
+            "backgroundView": "city",
+            "currentCityId": self.current_city_id,
+            "templateView": building_name,
+            "ajax": 1
+        }
+        temp = [[0, [0]]]
+        try:
+            res = self.s.post(self.link, data=data)
+            temp = res.json()
+            temp = UpdateData(**temp[0][1])
+            self.actionrequest = temp.actionRequest
+            return temp
+        except TypeError:
+            if temp[0][1][0] == "error":
+                raise ExpiredSession
+        except Exception as e:
+            print(e)
+        return None
+
+    @ensure_action_request
+    def send_resources(self, param: SendResources) -> Optional[UpdateData]:
+        data = {
+            "action": "transportOperations",
+            "function": "loadTransportersWithFreight",
+            "destinationCityId": param.destCityId,
+            "islandId": param.destIslandId,
+            "transportDisplayPrice": 0,
+            "premiumTransporter": 0,
+            "normalTransportersMax": param.transporters,
+            "usedFreightersShips": param.freighters,
+            "cargo_resource": param.wood,
+            "cargo_tradegood1": param.wine,
+            "cargo_tradegood2": param.marble,
+            "cargo_tradegood3": param.cristal,
+            "cargo_tradegood4": param.sulfur,
+            "capacity": param.capacity,
+            "max_capacity": 5,
+            "jetPropulsion": 0,
+            "transporters": param.transporters,
+            "backgroundView": "city",
+            "currentCityId": self.current_city_id,
+            "templateView": "transport",
+            "currentTab": "tabSendTransporter",
+            "actionRequest": self.actionrequest,
+            "ajax": 1
+        }
+        temp = [[0, [0]]]
+        try:
+            res = self.s.post(self.index, data=data)
+            temp = res.json()
+            temp = UpdateData(**temp[0][1])
+            self.actionrequest = temp.actionRequest
+            return temp
+        except TypeError:
+            if temp[0][1][0] == "error":
+                raise ExpiredSession
+        except Exception as e:
+            print(e)
+        return None
+
+
+    @ensure_action_request
+    def get_city_units(self, city_id: int):
+        data = {
+            "view": self.own_city_type if self.dict_of_cities[city_id].is_own else self.foreign_city_type,
             "activeTab": "tabShips",
             "cityId": city_id,
             "backgroundView": "city",

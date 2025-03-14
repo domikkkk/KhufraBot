@@ -3,7 +3,7 @@ import json
 import requests
 from http.client import IncompleteRead
 from typing import Dict, List, Optional, Tuple
-from dataclasses import dataclass
+from Ikariam.dataStructure import Rg_Keeper
 from bs4 import BeautifulSoup, Tag
 import re
 
@@ -11,12 +11,6 @@ import re
 def extract_brackets(content):
     return re.findall(r'\[(.*?)\]', content)
 
-
-@dataclass
-class Rg_Keeper:
-    rg: str
-    palm: bool
-    whose: str=None
 
 
 class rgBot(IkaBot):

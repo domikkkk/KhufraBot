@@ -3,65 +3,9 @@ from Ikariam.api.session import ExpiredSession, IkaBot, ensure_action_request
 from bs4 import BeautifulSoup, Tag
 import requests
 from http.client import IncompleteRead
-from dataclasses import dataclass
+from Ikariam.dataStructure import Attack, Attacks, Fleets, Troops, Player
 import re
 import time
-
-
-@dataclass(frozen=True)
-class Player:
-    name: str
-    f: str
-
-
-@dataclass(frozen=True)
-class Attack:
-    when:str
-    action: str
-    units: str
-    who: Player
-    whom: Player
-
-
-@dataclass(frozen=True)
-class Attacks:
-    occupy: List[Attack]
-    open_battle: List[Attack]
-    station: List[Attack]
-
-
-@dataclass
-class Troops:
-    hoplici: int
-    giganty: int
-    oszczepy: int
-    wojownicy: int
-    procarze: int
-    lucznicy: int
-    strzelcy: int
-    tarany: int
-    katapulty: int
-    mozdzierze: int
-    zyrki: int
-    balony: int
-    kucharze: int
-    medycy: int
-    spartanie: int
-
-
-@dataclass
-class Fleets:
-    miotacze: int
-    parowy: int
-    taranki: int
-    balisty: int
-    katapulty: int
-    mozdzierze: int
-    rakiety: int
-    podwodne: int
-    smigi: int
-    balony: int
-    pomoce: int
 
 
 def get_date(html):

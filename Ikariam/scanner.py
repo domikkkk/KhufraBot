@@ -56,14 +56,6 @@ class Scanner:
                 with open(self.path, 'w') as f:
                     json.dump(res, f, indent=4)
                 continue
-            for city in cities:
-                city.pop("abyssalAmbushOverlay", None)
-                city.pop("type", None)
-                city.pop("hasTreaties", None)
-                city.pop("actions", None)
-                city.pop("viewAble", None)
-                city.pop("infestedByPlague", None)
-            cities = [city for city in cities if city["id"] != -1]
-            res[x][y]["cities"] = cities
+            res[x][y]["cities"] = cities.to_dict()
         with open(self.path, 'w') as f:
             json.dump(res, f, indent=4)
