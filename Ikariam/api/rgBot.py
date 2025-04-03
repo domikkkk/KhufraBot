@@ -5,11 +5,9 @@ from http.client import IncompleteRead
 from typing import Dict, List, Optional, Tuple
 from Ikariam.dataStructure import Rg_Keeper
 from bs4 import BeautifulSoup, Tag
-import re
+from Ikariam.api.htmlparser import extract_brackets
 
 
-def extract_brackets(content):
-    return re.findall(r'\[(.*?)\]', content)
 
 
 

@@ -1,9 +1,11 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 import requests
 import numpy as np
-from bs4 import BeautifulSoup
 from functools import wraps
-from Ikariam.dataStructure import City, CitiesIsland, UpdateData, SendResources
+from Ikariam.dataStructure import City, CityIsland, UpdateData, SendResources
+from Ikariam.dataStructure import HEPHAEUSTUS, CITY_VIEW, ISLAND_VIEW
+from Ikariam.api.htmlparser import get_fleet, get_fleet_foreign
+import time
 
 
 class ExpiredSession(Exception):
@@ -24,37 +26,6 @@ def podciąg(s1: str, s2: str):
             else:
                 L[i+1, j+1] = max(L[i+1, j], L[i, j+1])
     return L[m, n]
-
-
-def get_fleet(html):
-    soup = BeautifulSoup(html, 'html.parser')
-    tab_ships_div = soup.find('div', id='tabShips')
-    content = tab_ships_div.find_all('div', class_='contentBox01h')[0]
-    tables = content.find_all('table', class_='militaryList') if tab_ships_div else []
-    ships_data = {}
-    for table in tables:
-        header_row = table.find('tr', class_='title_img_row')
-        headers = header_row.find_all('div', class_='tooltip') if header_row else []
-        ships = [(header.text, header.find_parent('div').get('class')[1][1:]) for header in headers]
-        count_row = table.find('tr', class_='count')
-        counts = [td.text.strip() for td in count_row.find_all('td')[1:]]
-        for (name, ship_id), count in zip(ships, counts):
-            ships_data[name] = {'id': ship_id, 'count': count}
-    return ships_data
-
-
-def get_fleet_foreign(html):
-    soup = BeautifulSoup(html, 'html.parser')
-    content = soup.find_all('div', class_='contentBox01h')[0]
-    row_troops = content.find_all('td', class_='rowTroop')
-    units = []
-    for row in row_troops:
-        army_buttons = row.find_all('div', class_='fleetbutton')
-        for button in army_buttons:
-            unit_name = button.get('title')
-            unit_count = button.text.strip()
-            units.append((unit_name, unit_count))
-    return units
 
 
 def ensure_action_request(func):
@@ -90,6 +61,8 @@ class IkaBot:
         self.current_city_id: int = -1
         self.own_city_type = 'cityMilitary'
         self.foreign_city_type = "relatedCities"
+        self.temple_positions: Dict[int, int] = {}
+        self.data: UpdateData = None
 
     def set_action_request(self):
         data = {
@@ -98,7 +71,7 @@ class IkaBot:
             "view": "highscore",
             "sbm": "Submit",
             "searchUser": 'Furi',
-            "backgroundView": "city",
+            "backgroundView": CITY_VIEW,
             "currentCityId": '',
             "templateView": "highscore",
             "actionRequest": self.actionrequest,
@@ -158,13 +131,13 @@ class IkaBot:
         return int(island_id)
 
     @ensure_action_request
-    def get_island_info(self, island_id) -> Optional[CitiesIsland]:
+    def get_island_info(self, island_id) -> Optional[List[CityIsland]]:
         if island_id < 0:
             return None
         data = {
             "view": "updateGlobalData",
             "islandId": island_id,
-            "backgroundView": "island",
+            "backgroundView": ISLAND_VIEW,
             "currentIslandId": island_id,
             "actionRequest": self.actionrequest,
             "ajax": 1   
@@ -173,8 +146,8 @@ class IkaBot:
         try:
             x = self.s.post(self.index, data=data)
             y = x.json()
-            cities = y[0][1]["backgroundData"]["cities"]
-            return CitiesIsland(*cities)
+            self.data = UpdateData(**y[0][1])
+            return self.data.backgroundData.cities
         except TypeError:
             if y[0][1][0] == "error":
                 raise ExpiredSession
@@ -182,25 +155,34 @@ class IkaBot:
             print(e)
 
     @ensure_action_request
+    def find_building(self, name: str) -> List[int]:
+        # data = self.change_city(self.current_city_id)
+        result: List[int] = []
+        for i, position in enumerate(self.data.backgroundData.position):
+            if position.building == name:
+                result.append(i)
+        return result
+
+    @ensure_action_request
     def change_city(self, target_city_id) -> Optional[UpdateData]:
         data = {
             "action": "header",
             "function": "changeCurrentCity",
             "actionRequest": self.actionrequest,
-            "oldView": "city",
+            "oldView": CITY_VIEW,
             "cityId": target_city_id,
             "currentCityId": self.current_city_id,
-            "backgroundView": "city",
+            "backgroundView": CITY_VIEW,
             "ajax": 1
         }
         temp = [[0, [0]]]
         try:
             res = self.s.post(self.index, data=data)
             temp = res.json()
-            temp = UpdateData(**temp[0][1])
-            self.actionrequest = temp.actionRequest
+            self.data = UpdateData(**temp[0][1])
+            self.actionrequest = self.data.actionRequest
             self.current_city_id = target_city_id
-            return temp
+            return self.data
         except TypeError:
             if temp[0][1][0] == "error":
                 raise ExpiredSession
@@ -217,7 +199,7 @@ class IkaBot:
             "cityId": self.current_city_id,
             "position": position,
             "level": old_level,
-            "backgroundView": "city",
+            "backgroundView": CITY_VIEW,
             "currentCityId": self.current_city_id,
             "templateView": building_name,
             "ajax": 1
@@ -226,9 +208,9 @@ class IkaBot:
         try:
             res = self.s.post(self.link, data=data)
             temp = res.json()
-            temp = UpdateData(**temp[0][1])
-            self.actionrequest = temp.actionRequest
-            return temp
+            self.data = UpdateData(**temp[0][1])
+            self.actionrequest = self.data.actionRequest
+            return self.data
         except TypeError:
             if temp[0][1][0] == "error":
                 raise ExpiredSession
@@ -256,7 +238,7 @@ class IkaBot:
             "max_capacity": 5,
             "jetPropulsion": 0,
             "transporters": param.transporters,
-            "backgroundView": "city",
+            "backgroundView": CITY_VIEW,
             "currentCityId": self.current_city_id,
             "templateView": "transport",
             "currentTab": "tabSendTransporter",
@@ -267,15 +249,31 @@ class IkaBot:
         try:
             res = self.s.post(self.index, data=data)
             temp = res.json()
-            temp = UpdateData(**temp[0][1])
-            self.actionrequest = temp.actionRequest
-            return temp
+            self.data = UpdateData(**temp[0][1])
+            self.actionrequest = self.data.actionRequest
+            return self.data
         except TypeError:
             if temp[0][1][0] == "error":
                 raise ExpiredSession
         except Exception as e:
             print(e)
         return None
+
+    @ensure_action_request
+    def activate_miracle(self, type: str=HEPHAEUSTUS) -> Optional[UpdateData]:
+
+        ## pewnie przelecieć po miastach i znaleźć, te którę się zgadzają z rodzajem cudu i znaleźć przy okazji największy lv
+        data = {
+            "action": "CityScreen",
+            "cityId": self.current_city_id,
+            "function": "activateWonder",
+            "position": 3,
+            "backgroundView": CITY_VIEW,
+            "currentCityId": self.current_city_id,
+            "templateView": "temple",
+            "actionRequest": self.actionrequest,
+            "ajax": 1
+        }
 
 
     @ensure_action_request
@@ -284,7 +282,7 @@ class IkaBot:
             "view": self.own_city_type if self.dict_of_cities[city_id].is_own else self.foreign_city_type,
             "activeTab": "tabShips",
             "cityId": city_id,
-            "backgroundView": "city",
+            "backgroundView": CITY_VIEW,
             "currentCityId": city_id,
             "currentTab": "tabShips",
             "actionRequest": self.actionrequest,

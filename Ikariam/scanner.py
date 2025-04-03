@@ -29,15 +29,8 @@ class Scanner:
                     bugs.append((x, y))
                     print(x, y, e)
                     continue
-                for city in cities:
-                    city.pop("abyssalAmbushOverlay", None)
-                    city.pop("type", None)
-                    city.pop("hasTreaties", None)
-                    city.pop("actions", None)
-                    city.pop("viewAble", None)
-                    city.pop("infestedByPlague", None)
-                cities = [city for city in cities if city["id"] != -1]
-                islands[x][y]["cities"] = cities
+                cities = [city for city in cities if city.id != -1]
+                islands[x][y]["cities"] = cities.to_dict()
             with open(self.path, "w") as f:
                 json.dump(islands, f, indent=4)
         return bugs
@@ -56,6 +49,6 @@ class Scanner:
                 with open(self.path, 'w') as f:
                     json.dump(res, f, indent=4)
                 continue
-            res[x][y]["cities"] = cities.to_dict()
+            res[x][y]["cities"] = [vars(city) for city in cities]
         with open(self.path, 'w') as f:
             json.dump(res, f, indent=4)

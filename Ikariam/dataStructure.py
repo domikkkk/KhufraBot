@@ -2,6 +2,26 @@ from dataclasses import dataclass
 from typing import List, Any, Dict
 
 
+HEPHAEUSTUS = "1"
+HADES = "2"
+DEMETER = "3"
+ATHENA = "4"
+HERMES = "5"
+ARES = "6"
+POSEIDON = "7"
+COLOSSUS = "8"
+
+
+WINE = "1"
+MARBLE = "2"
+CRISTAL = "3"
+SULFUR = "4"
+
+
+CITY_VIEW = "city"
+ISLAND_VIEW = "island"
+
+
 @dataclass
 class Rg_Keeper:
     rg: str
@@ -107,20 +127,6 @@ class CityIsland:
         self.state = kwargs.get("state")
 
 
-@dataclass
-class CitiesIsland:
-    all: List[CityIsland]
-
-    def __init__(self, *args):
-        self.all = [CityIsland(**city) for city in args if city.get("id", -1) != -1]
-
-    def __getitem__(self, index) -> CityIsland:
-        return self.all[index]
-
-    def to_dict(self):
-        return [vars(city) for city in self.all]
-
-
 ################################################################################
 #                           DANE ZWRACANE Z INNYMI                             #
 ################################################################################
@@ -135,29 +141,40 @@ class Position:
     groundId: int
 
     def __init__(self, **kwargs):
-        self.building = kwargs.get("building")
-        self.name = kwargs.get("name")
-        self.buildingId = kwargs.get("buildingId")
-        self.canUpgrade = kwargs.get("canUpgrade")
-        self.level = kwargs.get("level")
-        self.groundId = kwargs.get("groundId")
+        self.building = kwargs.get("building")  # nazwa po ang
+        self.name = kwargs.get("name")  # nazwa w języku
+        self.buildingId = kwargs.get("buildingId")  # id budynku
+        self.canUpgrade = kwargs.get("canUpgrade")  # czy można ulepszyć
+        self.level = kwargs.get("level")  # lv budynku
+        self.groundId = kwargs.get("groundId") # useless
 
 
 @dataclass
 class backGroundData:
     position: List[Position]  # lista budynków, a raczej pól
-    id: int
+    id: int  # id miasta, wyspy?
     isCapital: bool
-    islandId: int
-    islandName: str
-    islandXCoord: int
-    islandYCoord: int
-    name: str
+    islandId: int  # id wyspy
+    islandName: str  # nazwa wyspy
+    islandXCoord: int  # x
+    islandYCoord: int  # y
+    name: str  # nazwa miasta albo wyspy, zależy od poglądu
     underContruction: int  # index pola gdzie się coś ulepsza
     startUpgradeTime: int  # kiedy zaczęto
 
+    # Dane z wyspy
+    cities: List[CityIsland]  # miasta na wyspie
+    island: int  # id wyspy
+    tradegood: int
+    type: int  # typ wyspy?
+    wonder: str  # rodzaj cudu
+    wonderLevel: int  # lv cudu
+    wonderName: str  # nazwa po chuj?
+
+
+
     def __init__(self, **kwargs):
-        self.id = kwargs.get("id")
+        self.id = kwargs.get("id", -1)
         self.isCapital = kwargs.get("isCapital")
         self.islandId = kwargs.get("islandId")
         self.islandName = kwargs.get("islandName")
@@ -167,6 +184,14 @@ class backGroundData:
         self.underContruction = kwargs.get("underContruction", -1)
         self.startUpgradeTime = kwargs.get("startUpgradeTime", -1)
         self.position = [Position(**pos) for pos in kwargs.get("position", [])]
+
+        self.cities = [CityIsland(**city) for city in kwargs.get("cities", [])]
+        self.island = kwargs.get("island", -1)
+        self.tradegood = kwargs.get("tradegood")
+        self.type = kwargs.get("type")
+        self.wonder = kwargs.get("wonder")
+        self.wonderLevel = kwargs.get("wonderLevel")
+        self.wonderName = kwargs.get("wonderName")
 
 
 @dataclass
@@ -183,10 +208,10 @@ class curResources:
         self.citizens = kwargs.get("citizens")
         self.population = kwargs.get("population")
         self.wood = kwargs.get("resource")
-        self.wine = kwargs.get("1")
-        self.marble = kwargs.get("2")
-        self.cristal = kwargs.get("3")
-        self.sulfur = kwargs.get("4")
+        self.wine = kwargs.get(WINE)
+        self.marble = kwargs.get(MARBLE)
+        self.cristal = kwargs.get(CRISTAL)
+        self.sulfur = kwargs.get(SULFUR)
 
 
 @dataclass
@@ -227,6 +252,9 @@ class UpdateData:
         self.actionRequest = kwargs.get("actionRequest")
         self.backgroundData = backGroundData(**kwargs.get("backgroundData"))
         self.headerdata = headerData(**kwargs.get("headerData"))
+    
+
+    # Dorobić w backgrounddate dane jak mamy widok wyspy
 
 
 
@@ -243,14 +271,28 @@ class SendResources:
     cristal: int
     sulfur: int
 
-    def __init__(self, destCityId=-1, destIslandId=-1, **kwargs):
+    def __init__(
+            self,
+            destCityId,
+            destIslandId,
+            *,
+            transporters=0,
+            freighters=0,
+            capacity=5,
+            wood=0,
+            wine=0,
+            marble=0,
+            cristal=0,
+            sulfur=0
+        ) -> None:
+        assert wood + wine + marble + cristal + sulfur <= (transporters * 100 + freighters * 10000) * capacity, "Can't send"
         self.destCityId = destCityId
         self.destIslandId = destIslandId
-        self.transporters = kwargs.get("transporters", 0)
-        self.freighters = kwargs.get("freighters", 0)
-        self.capacity = kwargs.get("capacity", 5)
-        self.wood = kwargs.get("wood", 0)
-        self.wine = kwargs.get("wine", 0)
-        self.marble = kwargs.get("marble", 0)
-        self.cristal = kwargs.get("cristal", 0)
-        self.sulfur = kwargs.get("sulfur", 0)
+        self.transporters = transporters
+        self.freighters = freighters
+        self.capacity = capacity
+        self.wood = wood
+        self.wine = wine
+        self.marble = marble
+        self.cristal = cristal
+        self.sulfur = sulfur

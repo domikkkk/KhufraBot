@@ -1,15 +1,12 @@
 import discord.ext.commands
-from Common import TEST, TEST_CHANNEL
+from Common import TEST, ME
 from discord.ext import commands
 import discord
-import random
-from functools import wraps
-from Common import ME
+from discord import app_commands
 import discord.ext
-from Ikariam.api.generalBot import General
-from Ikariam.api.session import ExpiredSession
-from Ikariam.api.Cookie import gencookie
-import asyncio
+from Ikariam.api.session import ExpiredSession, IkaBot
+import decorators
+
 
 
 intents = discord.Intents().default()
@@ -18,56 +15,50 @@ intents.message_content = True
 intents.guilds = True
 intents.reactions = True
 
-
-# logging.basicConfig(filename="Khufra.log", level=logging.DEBUG, format='%(levelname)s - %(asctime)s - %(message)s')
 Khufra = commands.Bot(command_prefix='?', intents=intents)
 
-get_color = lambda: random.randint(0, 0xffffff)%(0xffffff+1)
+class Data:
+    def __init__(self):
+        self._limit = 1000000  # Tworzymy _limit w instancji
+        self.old = 0
+        self.max_limit = 7000000
 
+    @property
+    def limit(self):
+        return self._limit
 
-def restrict_to_guild_name(guild_name: str=None):
-    def decorator(func):
-        @wraps(func)
-        async def wrapper(interaction: discord.Interaction, *args, **kwargs):
-            if interaction.user.id != ME:
-                await interaction.response.send_message("Yolo")
-                return
-            if not interaction.guild:
-                await interaction.response.send_message("Ta komenda nie jest dostępna w wiadomościach prywatnych.", ephemeral=True)
-                return
-            if guild_name is not None and interaction.guild.name != guild_name:
-                await interaction.response.send_message("Nie masz dostępu do tej komendy na tym serwerze.", ephemeral=True)
-                return
-            return await func(interaction, *args, **kwargs)
-        return wrapper
-    return decorator
+    @limit.setter
+    def limit(self, new_limit):
+        self.old = self._limit
+        self._limit = new_limit
 
 
 @Khufra.event
 async def on_ready():
     synced = await Khufra.tree.sync()
     print(synced)
-    global general
-    general = General(gencookie, 62)
-    Khufra.loop.create_task(check_general())
+    global data 
+    data = Data()
+    # global bot 
+    # bot = IkaBot()
+    
+
+@Khufra.tree.command()
+async def get_limit(interaction: discord.Interaction):
+    global data
+    await interaction.response.send_message(data.limit)
 
 
-async def check_general():
-    await Khufra.wait_until_ready()
-    global general
-    loop = asyncio.get_running_loop()
-    channel = Khufra.get_channel(TEST_CHANNEL)
-    while not Khufra.is_closed():
-        try:
-            await asyncio.sleep(60)
-            attacks = await loop.run_in_executor(None, general.analize_attacks)
-            for attack in attacks:
-                await channel.send(f"<t:{attack.when}:R> {attack.action} - {attack.who.name+' '+attack.who.f} => {attack.whom.name+' '+attack.whom.f} - units: {attack.units}")
-        except ExpiredSession:
-            await channel.send(f"<@{ME}> potrzebna nowa sesja.")
-            break
-        except Exception as e:
-            with open("error.txt", 'w') as f:
-                f.write(str(e))
+@Khufra.tree.command()
+@app_commands.describe(new_limit="Nowa wartość po której przekroczeniu odpala się hades")
+@decorators.check_rank([691566329177702432, ME])
+async def set_limit(interaction: discord.Interaction, new_limit: int):
+    global data
+    if new_limit < 1000000 or new_limit > data.max_limit:
+        await interaction.response.send_message(f"Ustaw wartość z zakresu 1000000, {data.max_limit}")
+        return
+    data.limit = new_limit
+    await interaction.response.send_message(f"Ustawiono nowy limit z {data.old} na {data.limit}")
+
 
 Khufra.run(TEST)
