@@ -83,3 +83,9 @@ def get_units(html, land=True) -> Dict[str, Optional[Union[Troops, Fleets]]]:
                 units[player_name].append(int(td.get_text(strip=True).replace(',', '')))
     units = {name: obj(*units[name]) for name in units}
     return units
+
+
+def get_wonder_lv(html) -> int:
+    soup = BeautifulSoup(html, 'html.parser')
+    lv = int(soup.find('div', id='currentWonderLevel').get_text(strip=True))
+    return lv

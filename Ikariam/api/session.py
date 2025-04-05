@@ -1,10 +1,10 @@
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Tuple
 import requests
 import numpy as np
 from functools import wraps
 from Ikariam.dataStructure import City, CityIsland, UpdateData, SendResources
-from Ikariam.dataStructure import HEPHAEUSTUS, CITY_VIEW, ISLAND_VIEW
-from Ikariam.api.htmlparser import get_fleet, get_fleet_foreign
+from Ikariam.dataStructure import HEPHAEUSTUS, CITY_VIEW, ISLAND_VIEW, TEMPLE, RELATED_CITY, MIL_VIEW, WONDER
+from Ikariam.api.htmlparser import get_fleet, get_fleet_foreign, get_wonder_lv
 import time
 
 
@@ -59,12 +59,40 @@ class IkaBot:
         self.actionrequest: str = None
         self.dict_of_cities: Dict[int, City] = {}
         self.current_city_id: int = -1
-        self.own_city_type = 'cityMilitary'
-        self.foreign_city_type = "relatedCities"
+        self.current_island_id: int = -1
         self.temple_positions: Dict[int, int] = {}
         self.data: UpdateData = None
+        self.html = None
+        self.wonders: Dict[str, Tuple[int]] = {}  # słownik cudów - [id miasta, pozycja świątyni]
 
-    def set_action_request(self):
+    def send_request(self,
+                     data: Dict,
+                     index: bool=True,
+                     get_html: bool=False,
+                     update_cities: bool=False
+                     ) -> bool:
+        result = [[0, [0]]]
+        link = self.index if index else self.link
+        time.sleep(0.5)
+        try:
+            result = self.s.post(link, data=data).json()
+            self.data = UpdateData(**result[0][1])
+            if self.data.actionRequest is not None:
+                self.actionrequest = self.data.actionRequest
+            if get_html:
+                self.html = result[1][1]
+            if update_cities:
+                cities = result[0][1]["headerData"]["cityDropdownMenu"]
+                self.update_cities(cities)
+            return True
+        except TypeError:
+            if result[0][1][0] == "error":
+                raise ExpiredSession
+        except Exception as e:
+            print(e)
+        return False
+
+    def set_action_request(self) -> None:
         data = {
             "highscoreType": "score", #"army_score_main",  # score
             "offset": -1,
@@ -77,22 +105,12 @@ class IkaBot:
             "actionRequest": self.actionrequest,
             "ajax": 1
         }
-        y = [[0, [0]]]
-        try:
-            x = self.s.post(self.index, data=data)
-            y = x.json()
-            self.actionrequest = y[0][1]["actionRequest"]
-            cities = y[0][1]["headerData"]["cityDropdownMenu"]
-            self.update_cities(cities)
-        except TypeError:
-            if y[0][1][0] == "error":
-                raise ExpiredSession
-        except Exception as e:
-            print(e)
+        self.send_request(data, update_cities=True)
 
-    def update_cities(self, cities: dict):
+    def update_cities(self, cities: dict) -> None:
         self.dict_of_cities = {}
         self.current_city_id = cities[cities["selectedCity"]]["id"]
+        self.current_island_id = self.data.backgroundData.islandId
         for city in cities.values():
             if not isinstance(city, dict):
                 continue
@@ -123,7 +141,7 @@ class IkaBot:
             print(e)
         return None
 
-    def get_island_id(self, x, y):
+    def get_island_id(self, x, y) -> int:
         island = self.get_islands(x, y, radius=0)
         if len(island) < 1:
                 return -1
@@ -142,20 +160,11 @@ class IkaBot:
             "actionRequest": self.actionrequest,
             "ajax": 1   
         }
-        y = [[0, [0]]]
-        try:
-            x = self.s.post(self.index, data=data)
-            y = x.json()
-            self.data = UpdateData(**y[0][1])
+        if self.send_request(data):
             return self.data.backgroundData.cities
-        except TypeError:
-            if y[0][1][0] == "error":
-                raise ExpiredSession
-        except Exception as e:
-            print(e)
 
     @ensure_action_request
-    def find_building(self, name: str) -> List[int]:
+    def find_building(self, name: str) -> List[int]:  # list of positions of this building
         # data = self.change_city(self.current_city_id)
         result: List[int] = []
         for i, position in enumerate(self.data.backgroundData.position):
@@ -164,31 +173,21 @@ class IkaBot:
         return result
 
     @ensure_action_request
-    def change_city(self, target_city_id) -> Optional[UpdateData]:
+    def change_city(self, target_city_id: int, view: str=CITY_VIEW) -> Optional[UpdateData]:
         data = {
             "action": "header",
             "function": "changeCurrentCity",
             "actionRequest": self.actionrequest,
-            "oldView": CITY_VIEW,
+            "oldView": view,
             "cityId": target_city_id,
             "currentCityId": self.current_city_id,
-            "backgroundView": CITY_VIEW,
+            "backgroundView": view,
             "ajax": 1
         }
-        temp = [[0, [0]]]
-        try:
-            res = self.s.post(self.index, data=data)
-            temp = res.json()
-            self.data = UpdateData(**temp[0][1])
-            self.actionrequest = self.data.actionRequest
+        if self.send_request(data):
             self.current_city_id = target_city_id
+            self.current_island_id = self.data.backgroundData.islandId
             return self.data
-        except TypeError:
-            if temp[0][1][0] == "error":
-                raise ExpiredSession
-        except Exception as e:
-            print(e)
-        return None
 
     @ensure_action_request
     def upgrade_building(self, position, old_level, building_name) -> Optional[UpdateData]:
@@ -204,19 +203,8 @@ class IkaBot:
             "templateView": building_name,
             "ajax": 1
         }
-        temp = [[0, [0]]]
-        try:
-            res = self.s.post(self.link, data=data)
-            temp = res.json()
-            self.data = UpdateData(**temp[0][1])
-            self.actionrequest = self.data.actionRequest
+        if self.send_request(data, index=False):
             return self.data
-        except TypeError:
-            if temp[0][1][0] == "error":
-                raise ExpiredSession
-        except Exception as e:
-            print(e)
-        return None
 
     @ensure_action_request
     def send_resources(self, param: SendResources) -> Optional[UpdateData]:
@@ -245,41 +233,92 @@ class IkaBot:
             "actionRequest": self.actionrequest,
             "ajax": 1
         }
-        temp = [[0, [0]]]
-        try:
-            res = self.s.post(self.index, data=data)
-            temp = res.json()
-            self.data = UpdateData(**temp[0][1])
-            self.actionrequest = self.data.actionRequest
+        if self.send_request(data):
             return self.data
-        except TypeError:
-            if temp[0][1][0] == "error":
-                raise ExpiredSession
-        except Exception as e:
-            print(e)
-        return None
+
+
+    def find_highest_wonder_lv(self, wonder: str=HEPHAEUSTUS) -> bool:
+        ids = list(self.dict_of_cities.keys())
+        highest_lv = 0
+        pos = -1
+        for id in ids:
+            if not self.dict_of_cities[id].is_own:
+                continue
+            self.change_city(id)
+            result = self.find_building(TEMPLE)
+            if len(result) == 0:
+                continue
+            pos = result[0]
+            self.view_on_island(WONDER)
+            if self.data.backgroundData.wonder == wonder:
+                lv = get_wonder_lv(self.html[1])
+                if highest_lv < lv:
+                    highest_lv = lv
+            if highest_lv == 5:
+                break
+        if pos != -1:
+            self.wonders[wonder] = (self.current_city_id, pos)
+            return True
+        return False
+
 
     @ensure_action_request
-    def activate_miracle(self, type: str=HEPHAEUSTUS) -> Optional[UpdateData]:
+    def view_on_island(self, view: str):
+        data = {
+            "view": view,
+            "islandId:": self.current_island_id,
+            "backgroundView": ISLAND_VIEW,
+            "currentIslandId": self.current_island_id,
+            "actionRequest": self.actionrequest,
+            "ajax": 1
+        }
+        if not self.send_request(data, index=False, get_html=True):
+            print("Error")
+    
+    @ensure_action_request
+    def view_building(self, view: str, pos: int) -> str:
+        data = {
+            "view": view,
+            "cityId": self.current_city_id,
+            "position": pos,
+            "backgroundView": CITY_VIEW,
+            "currentCityId": self.current_city_id,
+            "actionRequest": self.actionrequest,
+            "ajax": 1
+        }
+        if self.send_request(data, index=False, get_html=True):
+            return self.html[1]
 
-        ## pewnie przelecieć po miastach i znaleźć, te którę się zgadzają z rodzajem cudu i znaleźć przy okazji największy lv
+
+    @ensure_action_request
+    def activate_miracle(self, wonder: str) -> Optional[UpdateData]:
+        if wonder not in self.wonders:
+            if not self.find_highest_wonder_lv(wonder):
+                return None
+        cityId, pos = self.wonders[wonder]
+        if cityId != self.current_city_id:
+            self.change_city(cityId)
         data = {
             "action": "CityScreen",
             "cityId": self.current_city_id,
             "function": "activateWonder",
-            "position": 3,
+            "position": pos,
             "backgroundView": CITY_VIEW,
             "currentCityId": self.current_city_id,
-            "templateView": "temple",
+            "templateView": TEMPLE,
             "actionRequest": self.actionrequest,
             "ajax": 1
         }
+        if self.send_request(data):
+            return self.data
+        return None
 
+# ---------------------------------------------------------------------------------------
 
     @ensure_action_request
     def get_city_units(self, city_id: int):
         data = {
-            "view": self.own_city_type if self.dict_of_cities[city_id].is_own else self.foreign_city_type,
+            "view": MIL_VIEW if self.dict_of_cities[city_id].is_own else RELATED_CITY,
             "activeTab": "tabShips",
             "cityId": city_id,
             "backgroundView": CITY_VIEW,
@@ -288,15 +327,6 @@ class IkaBot:
             "actionRequest": self.actionrequest,
             "ajax": 1
         }
-        temp = [[0, [0]]]
-        try:
-            res = self.s.post(self.index, data=data)
-            temp = res.json()
-            return get_fleet(temp[1][1][1])
-        except TypeError:
-            if temp[0][1][0] == "error":
-                raise ExpiredSession
-        except Exception as e:
-            print(e)
-        return None
+        if self.send_request(data, get_html=True):
+            return get_fleet(self.html[1])
             

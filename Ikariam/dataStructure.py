@@ -22,6 +22,13 @@ CITY_VIEW = "city"
 ISLAND_VIEW = "island"
 
 
+TEMPLE = "temple"
+WONDER = "wonder"
+MIL_VIEW = "cityMilitary"
+RELATED_CITY = "relatedCities"
+
+
+
 @dataclass
 class Rg_Keeper:
     rg: str
@@ -190,7 +197,7 @@ class backGroundData:
         self.tradegood = kwargs.get("tradegood")
         self.type = kwargs.get("type")
         self.wonder = kwargs.get("wonder")
-        self.wonderLevel = kwargs.get("wonderLevel")
+        self.wonderLevel = int(kwargs.get("wonderLevel", -1))
         self.wonderName = kwargs.get("wonderName")
 
 

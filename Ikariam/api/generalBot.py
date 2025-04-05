@@ -56,6 +56,8 @@ class General(IkaBot):
     def find_embassy(self) -> bool:
         ids = list(self.dict_of_cities.keys())
         for id in ids:
+            if not self.dict_of_cities[id].is_own:
+                continue
             self.change_city(id)
             position = self.find_building("embassy")
             if len(position) != 0:
