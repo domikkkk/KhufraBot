@@ -1,112 +1,10 @@
 from typing import List, Optional, Dict, Union
 from Ikariam.api.session import ExpiredSession, IkaBot, ensure_action_request
-from bs4 import BeautifulSoup, Tag
 import requests
 from http.client import IncompleteRead
-from dataclasses import dataclass
-import re
+from Ikariam.dataStructure import Attack, Attacks, Fleets, Troops
 import time
-
-
-@dataclass(frozen=True)
-class Player:
-    name: str
-    f: str
-
-
-@dataclass(frozen=True)
-class Attack:
-    when:str
-    action: str
-    units: str
-    who: Player
-    whom: Player
-
-
-@dataclass(frozen=True)
-class Attacks:
-    occupy: List[Attack]
-    open_battle: List[Attack]
-    station: List[Attack]
-
-
-@dataclass
-class Troops:
-    hoplici: int
-    giganty: int
-    oszczepy: int
-    wojownicy: int
-    procarze: int
-    lucznicy: int
-    strzelcy: int
-    tarany: int
-    katapulty: int
-    mozdzierze: int
-    zyrki: int
-    balony: int
-    kucharze: int
-    medycy: int
-    spartanie: int
-
-
-@dataclass
-class Fleets:
-    miotacze: int
-    parowy: int
-    taranki: int
-    balisty: int
-    katapulty: int
-    mozdzierze: int
-    rakiety: int
-    podwodne: int
-    smigi: int
-    balony: int
-    pomoce: int
-
-
-def get_date(html):
-    script_tag = html.find('script', string=True).get_text()
-    match = re.search(r'enddate:\s*(\d+)', script_tag)
-    return int(match.group(1))
-
-
-def clean_whitespace(text):
-    return re.sub(r'\s+', ' ', text.strip())
-
-
-def get_attacks(html) -> List[Attack]:
-    soup = BeautifulSoup(html, 'html.parser')
-    mainview = soup.find('div', id='mainview')
-    table = mainview.find('table', class_="embassyTable")
-    attacks = []
-    for row in table.find_all('tr')[1:]:
-        row: Tag
-        if "No members of your alliance are being attacked at the moment." in row.text:
-            break
-        cells = row.find_all('td')
-        date = get_date(cells[0])
-        who = Player(*[clean_whitespace(x.text) for x in cells[3].find_all('a', class_="bold")])
-        whom = Player(*[clean_whitespace(x.text) for x in cells[4].find_all('a', class_="bold")])
-        attack = Attack(date, cells[1].text.strip(), cells[2].text.strip(), who, whom)
-        attacks.append(attack)
-    return attacks
-
-
-def get_units(html, land=True) -> Dict[str, Optional[Union[Troops, Fleets]]]:
-    soup = BeautifulSoup(html, 'html.parser')
-    mainview = soup.find('div', id='mainview')
-    tables = mainview.find_all('table', class_="table01 embassyTable troops")
-    obj = Troops if land else Fleets
-    units = {}
-    for table in tables:
-        for row in table.find_all('tr')[1:-1]:
-            player_name = row.find('td', class_='left').find('a').get_text(strip=True)
-            if not player_name in units:
-                units[player_name] = []
-            for td in row.find_all('td', class_='right'):
-                units[player_name].append(int(td.get_text(strip=True).replace(',', '')))
-    units = {name: obj(*units[name]) for name in units}
-    return units
+from Ikariam.api.htmlparser import get_attacks, get_units
 
 
 def ensure_embassy(func):
@@ -155,26 +53,17 @@ class General(IkaBot):
             print(e)
 
     @ensure_action_request
-    def find_embassy(self):
+    def find_embassy(self) -> bool:
         ids = list(self.dict_of_cities.keys())
-        cities = len(ids)
-        i = 0
-        while cities > 0:
-            try:
-                cityId = ids[i]
-                data = self.change_city(cityId)
-                positions = data["backgroundData"]["position"]
-                i += 1
-                cities -= 1
-            except Exception:
+        for id in ids:
+            if not self.dict_of_cities[id].is_own:
                 continue
-            finally:
-                time.sleep(1)
-            for position, building in enumerate(positions):
-                if building["building"] == "embassy":
-                    self.embassy_position = position
-                    return True
-        return False
+            self.change_city(id)
+            position = self.find_building("embassy")
+            if len(position) != 0:
+                self.embassy_position = position[0]
+                return True
+        return True
 
     def get_attacks(self) -> Optional[Attacks]:
         attacks = self.get_attacks_to_Ally()
