@@ -79,6 +79,7 @@ async def remindme(interaction: discord.Interaction, what: str, h:int = 0, m:int
         await interaction.response.send_message("Musisz podać czas")
         return
     t = 3600 * h + 60 * m + s
+    stamper = round(time.time()) + t
     reminder_id = str(uuid.uuid4())
     user_id = interaction.user.id
 
@@ -96,8 +97,8 @@ async def remindme(interaction: discord.Interaction, what: str, h:int = 0, m:int
     task = asyncio.create_task(reminder_task())
     if user_id not in tasks:
         tasks[user_id] = {}
-    tasks[user_id][reminder_id] = task, what, t
-    await interaction.response.send_message(f"Chyba załapałem, więc Ci przypomne {what} <t:{round(time.time()) + t}:R>")
+    tasks[user_id][reminder_id] = task, what, stamper
+    await interaction.response.send_message(f"Chyba załapałem, więc Ci przypomne {what} <t:{stamper}:R>")
 
 
 @Khufra.tree.command(description="Wyświelta liste aktywnych przypomnień")
@@ -107,7 +108,7 @@ async def remindme_list(interaction: discord.Interaction):
     if not user_tasks:
         await interaction.response.send_message("Nie masz żadnych przypomnień")
         return
-    reminders = '\n'.join([f"{id}\t{task[1]} <t:{round(time.time()) + task[2]}:R>" for id, task in user_tasks.items()])
+    reminders = '\n'.join([f"{id}\t{task[1]} <t:{task[2]}:R>" for id, task in user_tasks.items()])
     await interaction.response.send_message(f"Twoje przypomnienia:\n{reminders}", ephemeral=True)
 
 
@@ -120,7 +121,7 @@ async def remindme_remove(interaction: discord.Interaction, uuid: str):
         await interaction.response.send_message("Nie masz żadnych przypomnień", ephemeral=True)
         return
     if not uuid in user_tasks:
-        reminders = '\n'.join([f"{id}\t{task[1]} <t:{round(time.time()) + task[2]}:R>" for id, task in user_tasks.items()])
+        reminders = '\n'.join([f"{id}\t{task[1]} <t:{task[2]}:R>" for id, task in user_tasks.items()])
         await interaction.response.send_message(f"Twoje przypomnienia:\n{reminders}", ephemeral=True)
         await interaction.followup.send(f"Nie ma takiego {uuid} w powyższej liście", ephemeral=True)
         return

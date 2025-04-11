@@ -9,6 +9,10 @@ class Scanner:
         self.bot = bot
         self.bot.set_action_request()
         self.path = path
+        self.different_letters = {
+            'с': 'c',
+            'і': 'i'
+        }
 
     def run(self):
         islands = self.bot.get_islands(50, 50, 50)
@@ -36,8 +40,13 @@ class Scanner:
                     city.pop("actions", None)
                     city.pop("viewAble", None)
                     city.pop("infestedByPlague", None)
-                cities = [city for city in cities if city["id"] != -1]
-                islands[x][y]["cities"] = cities
+                copy_cities = []
+                for city in cities:
+                    if city["id"] == -1:
+                        continue
+                    city["ownerName"] = self.get_mapped(city["ownerName"])
+                    copy_cities.append(city)
+                islands[x][y]["cities"] = copy_cities
             with open(self.path, "w") as f:
                 json.dump(islands, f, indent=4)
         return bugs
@@ -67,3 +76,9 @@ class Scanner:
             res[x][y]["cities"] = cities
         with open(self.path, 'w') as f:
             json.dump(res, f, indent=4)
+
+    def get_mapped(self, string: str):
+        copy = ''
+        for letter in string.lower():
+            copy += self.different_letters.get(letter, letter)
+        return copy.lower()

@@ -180,12 +180,17 @@ class General(IkaBot):
         attacks = self.get_attacks_to_Ally()
         if not attacks:
             return None
-        attacks = Attacks(
-            [attack for attack in attacks if "occupy" in attack.action.lower() or "pillage" in attack.action.lower()],
-            [attack for attack in attacks if "open battle" in attack.action.lower()],
-            [attack for attack in attacks if "station" in attack.action.lower()]
-        )
-        return attacks
+        occupy = []
+        open_battle = []
+        station = []
+        for attack in attacks:
+            if "open battle" in attack.action.lower():
+                open_battle.append(attack)
+            elif "occupy" in attack.action.lower() or "pillage" in attack.action.lower():
+                occupy.append(attack)
+            else:
+                station.append(attack)
+        return Attacks(occupy, open_battle, station)
 
     def analyse_attacks(self) -> List[Attack]:
         attacks = self.get_attacks()
