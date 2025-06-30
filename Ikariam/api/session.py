@@ -63,9 +63,10 @@ class IkaBot:
         self.temple_positions: Dict[int, int] = {}
         self.data: UpdateData = None
         self.html = None
+        self.updateTemplateData = None
         self.wonders: Dict[str, Tuple[int]] = {}  # słownik cudów - [id miasta, pozycja świątyni]
 
-    def send_request(self,
+    def _send_request(self,
                      data: Dict,
                      index: bool=True,
                      get_html: bool=False,
@@ -80,6 +81,7 @@ class IkaBot:
             if self.data.actionRequest is not None:
                 self.actionrequest = self.data.actionRequest
             if get_html:
+                self.updateTemplateData = result[2][1]
                 self.html = result[1][1]
             if update_cities:
                 cities = result[0][1]["headerData"]["cityDropdownMenu"]
@@ -105,7 +107,7 @@ class IkaBot:
             "actionRequest": self.actionrequest,
             "ajax": 1
         }
-        self.send_request(data, update_cities=True)
+        self._send_request(data, update_cities=True)
 
     def update_cities(self, cities: dict) -> None:
         self.dict_of_cities = {}
@@ -160,7 +162,7 @@ class IkaBot:
             "actionRequest": self.actionrequest,
             "ajax": 1   
         }
-        if self.send_request(data):
+        if self._send_request(data):
             return self.data.backgroundData.cities
 
     @ensure_action_request
@@ -185,7 +187,7 @@ class IkaBot:
             "templateView": "townHall",
             "ajax": 1
         }
-        if self.send_request(data):
+        if self._send_request(data):
             self.current_city_id = target_city_id
             self.current_island_id = self.data.backgroundData.islandId
             return self.data
@@ -193,8 +195,7 @@ class IkaBot:
     @ensure_action_request
     def upgrade_building(self, position, old_level, building_name) -> Optional[UpdateData]:
         data = {
-            "action": "CityScreen",
-            "function": "upgradeBuilding",
+            "action": "UpgradeExistingBuildingn",
             "actionRequest": self.actionrequest,
             "cityId": self.current_city_id,
             "position": position,
@@ -204,7 +205,7 @@ class IkaBot:
             "templateView": building_name,
             "ajax": 1
         }
-        if self.send_request(data, index=False):
+        if self._send_request(data, index=False):
             return self.data
 
     @ensure_action_request
@@ -234,7 +235,7 @@ class IkaBot:
             "actionRequest": self.actionrequest,
             "ajax": 1
         }
-        if self.send_request(data):
+        if self._send_request(data):
             return self.data
 
 
@@ -273,7 +274,7 @@ class IkaBot:
             "actionRequest": self.actionrequest,
             "ajax": 1
         }
-        if not self.send_request(data, index=False, get_html=True):
+        if not self._send_request(data, index=False, get_html=True):
             print("Error")
     
     @ensure_action_request
@@ -287,7 +288,7 @@ class IkaBot:
             "actionRequest": self.actionrequest,
             "ajax": 1
         }
-        if self.send_request(data, index=False, get_html=True):
+        if self._send_request(data, index=False, get_html=True):
             return self.html[1]
 
 
@@ -310,7 +311,7 @@ class IkaBot:
             "actionRequest": self.actionrequest,
             "ajax": 1
         }
-        if self.send_request(data):
+        if self._send_request(data):
             return self.data
         return None
 
@@ -328,6 +329,6 @@ class IkaBot:
             "actionRequest": self.actionrequest,
             "ajax": 1
         }
-        if self.send_request(data, get_html=True):
+        if self._send_request(data, get_html=True):
             return get_fleet(self.html[1])
             

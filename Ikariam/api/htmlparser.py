@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup, Tag
 import re
 from Ikariam.dataStructure import Attack, Fleets, Troops, Player
-from typing import List, Optional, Dict, Union
+from typing import List, Optional, Dict, Union, Tuple
 
 
 def get_fleet(html):
@@ -89,3 +89,22 @@ def get_wonder_lv(html) -> int:
     soup = BeautifulSoup(html, 'html.parser')
     lv = int(soup.find('div', id='currentWonderLevel').get_text(strip=True))
     return lv
+
+
+def get_transporter_info(html, template) -> Dict[str, int]:
+    soup = BeautifulSoup(html, 'html.parser')
+    views = soup.find_all('div', class_='tooltip')
+    capacities = {}
+    for view in views:
+        id = view.get("id")
+        if "phoenician" in id.lower():
+            continue
+        info = template.get(id)
+        if info:
+            text = info.get("text")
+            numbers = re.findall(r'\d[\d,]*', text)
+            if numbers:
+                number = int(numbers[-1].replace(',', ''))
+                name = re.search(r'^js_(.+?)Tooltip$', id).group(1)
+                capacities[name] = number
+    return capacities

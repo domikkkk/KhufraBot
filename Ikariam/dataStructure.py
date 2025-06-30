@@ -19,7 +19,9 @@ SULFUR = "4"
 
 
 CITY_VIEW = "city"
+CITY_VIEW_TEMPLATE = "townHall"
 ISLAND_VIEW = "island"
+ISLAND_VIEW_TEMPLATE = ""
 
 
 TEMPLE = "temple"
@@ -292,7 +294,8 @@ class SendResources:
             cristal=0,
             sulfur=0
         ) -> None:
-        assert wood + wine + marble + cristal + sulfur <= (transporters * 100 + freighters * 10000) * capacity, "Can't send"
+        ### Dorobić koniecznie ulepszenia dla transportowych i handli (500 + lv*20) (50000 + lv*500)
+        assert wood + wine + marble + cristal + sulfur <= (transporters * 500 + freighters * 50000) * capacity / 5, "Can't send"
         self.destCityId = destCityId
         self.destIslandId = destIslandId
         self.transporters = transporters
