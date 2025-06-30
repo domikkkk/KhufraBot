@@ -182,6 +182,7 @@ class IkaBot:
             "cityId": target_city_id,
             "currentCityId": self.current_city_id,
             "backgroundView": view,
+            "templateView": "townHall",
             "ajax": 1
         }
         if self.send_request(data):

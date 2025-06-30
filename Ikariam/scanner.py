@@ -34,7 +34,7 @@ class Scanner:
                     print(x, y, e)
                     continue
                 cities = [city for city in cities if city.id != -1]
-                islands[x][y]["cities"] = cities.to_dict()
+                islands[x][y]["cities"] = [vars(city) for city in cities]
             with open(self.path, "w") as f:
                 json.dump(islands, f, indent=4)
         return bugs
