@@ -14,11 +14,19 @@ class Scanner:
             'і': 'i'
         }
 
-    def run(self):
-        islands = self.bot.get_islands(50, 50, 50)
+    def run(self, again=False):
+        if again:
+            with open(self.path, 'r') as f:
+                islands = json.load(f)
+        else:
+            islands = self.bot.get_islands(50, 50, 50)
         bugs = []
         for x in islands:
+            skipped = False
             for y in islands[x]:
+                if again and isinstance(islands[x][y], dict):
+                    skipped = True
+                    continue
                 id = int(islands[x][y][0])
                 name = islands[x][y][1]
                 islands[x][y] = {
@@ -29,14 +37,15 @@ class Scanner:
                 try:
                     time.sleep(random.randint(8, 12))
                     cities = self.bot.get_island_info(id)
+                    cities = [city for city in cities if city.id != -1]
+                    islands[x][y]["cities"] = [vars(city) for city in cities]
                 except Exception as e:
                     bugs.append((x, y))
                     print(x, y, e)
                     continue
-                cities = [city for city in cities if city.id != -1]
-                islands[x][y]["cities"] = [vars(city) for city in cities]
-            with open(self.path, "w") as f:
-                json.dump(islands, f, indent=4)
+            if not skipped:
+                with open(self.path, "w") as f:
+                    json.dump(islands, f, indent=4)
         return bugs
 
     def correct(self, bugs):
