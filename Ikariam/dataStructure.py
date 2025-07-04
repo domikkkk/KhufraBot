@@ -101,15 +101,15 @@ class City:
     coords: str
     tradegood: int
     is_own: bool
-    extra: List[Any]
+    # extra: List[Any]
 
-    def __init__(self, *args):
-        self.id = args[0]
-        self.name = args[1]
-        self.coords = args[2]
-        self.tradegood = args[3]
-        self.is_own = args[4]
-        self.extra = list(args[5:])  # Wszystko, co nadmiarowe
+    def __init__(self, **kwargs):
+        self.id: int = kwargs.get("id")
+        self.name: str = kwargs.get("name")
+        self.coords: str = kwargs.get("coords")
+        self.tradegood: int = kwargs.get("tradegood")
+        self.is_own: bool = kwargs.get("is_own")
+        # self.extra: List[Any] = List(kwargs.values())  # Wszystko``
 
 
 @dataclass
@@ -190,7 +190,7 @@ class backGroundData:
         self.islandXCoord = kwargs.get("islandXCoord")
         self.islandYCoord = kwargs.get("islandYCoord")
         self.name = kwargs.get("name")
-        self.underContruction = kwargs.get("underContruction", -1)
+        self.underContruction = kwargs.get("underConstruction", -1)
         self.startUpgradeTime = kwargs.get("startUpgradeTime", -1)
         self.position = [Position(**pos) for pos in kwargs.get("position", [])]
 
@@ -264,7 +264,6 @@ class UpdateData:
     
 
     # Dorobić w backgrounddate dane jak mamy widok wyspy
-
 
 
 @dataclass

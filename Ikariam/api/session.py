@@ -112,13 +112,13 @@ class IkaBot:
     def update_cities(self, cities: dict) -> None:
         self.dict_of_cities = {}
         self.current_city_id = cities[cities["selectedCity"]]["id"]
-        self.current_island_id = self.data.backgroundData.islandId
+        self.current_island_id = int(self.data.backgroundData.islandId)
         for city in cities.values():
             if not isinstance(city, dict):
                 continue
             city_id = int(city["id"])
             city["relationship"] = city["relationship"] == "ownCity"
-            self.dict_of_cities[city_id] = City(*city.values())
+            self.dict_of_cities[city_id] = City(**city)
 
     @ensure_action_request
     def get_islands(self, x, y, radius=0):
@@ -151,7 +151,8 @@ class IkaBot:
         return int(island_id)
 
     @ensure_action_request
-    def get_island_info(self, island_id) -> Optional[List[CityIsland]]:
+    def get_island_info(self, island_id=None) -> Optional[List[CityIsland]]:
+        island_id = island_id or self.current_island_id
         if island_id < 0:
             return None
         data = {
@@ -189,13 +190,13 @@ class IkaBot:
         }
         if self._send_request(data):
             self.current_city_id = target_city_id
-            self.current_island_id = self.data.backgroundData.islandId
+            self.current_island_id = int(self.data.backgroundData.islandId)
             return self.data
 
     @ensure_action_request
     def upgrade_building(self, position, old_level, building_name) -> Optional[UpdateData]:
         data = {
-            "action": "UpgradeExistingBuildingn",
+            "action": "UpgradeExistingBuilding",
             "actionRequest": self.actionrequest,
             "cityId": self.current_city_id,
             "position": position,
