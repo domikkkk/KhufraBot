@@ -1,8 +1,8 @@
 import socket
-import struct
 import threading
 from multicast import Multicast, MCAST_PORT, MCAST_GRP
 from typing import Dict
+from message import Message
 
 
 TCP_PORT = 12345
@@ -11,23 +11,24 @@ TCP_PORT = 12345
 class Broker:
     def __init__(self):
         self.multicast: Multicast = Multicast()
-        self.dc_bots: Dict[str, socket._RetAddress] = {}
-        self.bots = Dict[str, socket._RetAddress] = {}
+        self.dc_bots: Dict[str, str] = {}
+        self.bots: Dict[str, str] = {}
         self.port = TCP_PORT
-
-    def dare(self, message:str):
-        bot_type = int(message[0])
 
     def udp_multicast_discovery(self):
         sock = self.multicast.udp_discovery()
         while True:
             data, addr = sock.recvfrom(1024)
-            message = data.decode('utf-8', errors='ignore')
+            msg = Message.from_bytes(data)
+            message = msg.content.decode('utf-8', errors='ignore')
             print(f"Otrzymano od {addr}: {message}")
             if message == "DISCOVER_BROKER":
+                if msg.bot_type == '1':
+                    self.dc_bots[msg.bot_id] = addr
+                elif msg.bot_type == '2':
+                    self.bots[msg.bot_id] = addr
                 response = f"BROKER_IP={self.multicast.local_ip};BROKER_PORT={self.port}"
                 sock.sendto(response.encode('utf-8'), addr)
-                print(f"Wysłano odpowiedź do {addr}")
 
 
 def handle_client(conn, addr):
@@ -74,8 +75,9 @@ def tcp_server():
 
 
 def main():
-    threading.Thread(target=udp_multicast_discovery, daemon=True).start()
-    threading.Thread(target=tcp_server, daemon=True).start()
+    broker = Broker()
+    threading.Thread(target=broker.udp_multicast_discovery, daemon=True).start()
+    # threading.Thread(target=tcp_server, daemon=True).start()
 
     print("Serwer uruchomiony. Ctrl+C, aby zakończyć.")
     try:
