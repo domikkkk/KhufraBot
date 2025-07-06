@@ -1,6 +1,6 @@
 import socket
 import threading
-from message import Message
+from message import Message, DiscoverMessage, Header
 
 
 MCAST_GRP = '224.1.1.1'
@@ -12,9 +12,9 @@ def discover_server(timeout=5):
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     sock.settimeout(timeout)
 
-    message = Message(1, 1, 2, b"DISCOVER_BROKER")
+    message = DiscoverMessage(1, b"DISCOVER_BROKER")
     
-    sock.sendto(message.to_bytes(), (MCAST_GRP, MCAST_PORT))
+    sock.sendto(Header(0, message.to_bytes()).to_bytes(), (MCAST_GRP, MCAST_PORT))
     try:
         data, addr = sock.recvfrom(1024)
         response = data.decode('utf-8')
