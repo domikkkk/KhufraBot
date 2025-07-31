@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Any, Dict
 
 
@@ -103,7 +103,7 @@ class City:
     is_own: bool
     # extra: List[Any]
 
-    def __init__(self, **kwargs):
+    def __init__(self, kwargs: dict):
         self.id: int = kwargs.get("id")
         self.name: str = kwargs.get("name")
         self.coords: str = kwargs.get("coords")
@@ -124,7 +124,7 @@ class CityIsland:
     ownerAllyTag: str
     state: str
 
-    def __init__(self, **kwargs):
+    def __init__(self, kwargs: dict):
         self.type = kwargs.get("type")
         self.name = kwargs.get("name")
         self.id = kwargs.get("id")
@@ -149,7 +149,7 @@ class Position:
     level: int
     groundId: int
 
-    def __init__(self, **kwargs):
+    def __init__(self, kwargs: dict):
         self.building = kwargs.get("building")  # nazwa po ang
         self.name = kwargs.get("name")  # nazwa w języku
         self.buildingId = kwargs.get("buildingId")  # id budynku
@@ -182,7 +182,7 @@ class backGroundData:
 
 
 
-    def __init__(self, **kwargs):
+    def __init__(self, kwargs: dict):
         self.id = kwargs.get("id", -1)
         self.isCapital = kwargs.get("isCapital")
         self.islandId = kwargs.get("islandId")
@@ -192,9 +192,9 @@ class backGroundData:
         self.name = kwargs.get("name")
         self.underContruction = kwargs.get("underConstruction", -1)
         self.startUpgradeTime = kwargs.get("startUpgradeTime", -1)
-        self.position = [Position(**pos) for pos in kwargs.get("position", [])]
+        self.position = [Position(pos) for pos in kwargs.get("position", [])]
 
-        self.cities = [CityIsland(**city) for city in kwargs.get("cities", [])]
+        self.cities = [CityIsland(city) for city in kwargs.get("cities", [])]
         self.island = kwargs.get("island", -1)
         self.tradegood = kwargs.get("tradegood")
         self.type = kwargs.get("type")
@@ -213,7 +213,7 @@ class curResources:
     cristal: int  # 3
     sulfur: int  # 4
 
-    def __init__(self, **kwargs):
+    def __init__(self, kwargs: dict):
         self.citizens = kwargs.get("citizens")
         self.population = kwargs.get("population")
         self.wood = kwargs.get("resource")
@@ -237,7 +237,7 @@ class headerData:
     maxResources: int
     upkeep: float
 
-    def __init__(self, **kwargs):
+    def __init__(self, kwargs: dict):
         self.freeFreighters = kwargs.get("freeFreighters")
         self.freeTransporters = kwargs.get("freeTransporters")
         self.gold = kwargs.get("gold")
@@ -248,7 +248,7 @@ class headerData:
         self.wineSpendings = kwargs.get("wineSpendings")
         self.maxResources = kwargs.get("maxResources", {"0":0})["0"]
         self.upkeep = kwargs.get("upkeep")
-        self.currentResources = curResources(**kwargs.get("currentResources"))
+        self.currentResources = curResources(kwargs.get("currentResources"))
 
 
 @dataclass
@@ -257,51 +257,34 @@ class UpdateData:
     backgroundData: backGroundData
     headerdata: headerData
 
-    def __init__(self, **kwargs):
+    def __init__(self, kwargs: dict):
         self.actionRequest = kwargs.get("actionRequest")
-        self.backgroundData = backGroundData(**kwargs.get("backgroundData"))
-        self.headerdata = headerData(**kwargs.get("headerData"))
+        self.backgroundData = backGroundData(kwargs.get("backgroundData"))
+        self.headerdata = headerData(kwargs.get("headerData"))
     
 
     # Dorobić w backgrounddate dane jak mamy widok wyspy
 
-
 @dataclass
 class SendResources:
-    destCityId: int
-    destIslandId: int
-    transporters: int
-    freighters: int
-    capacity: int  # od 1 do 5 jako ładowność
-    wood: int
-    wine: int
-    marble: int
-    cristal: int
-    sulfur: int
+    destCityId: int | None = None
+    destIslandId: int | None = None
+    transporters: int = 0
+    freighters: int = 0
+    capacity: int = 5  # od 1 do 5 jako ładowność
+    wood: int = 0
+    wine: int = 0
+    marble: int = 0
+    cristal: int = 0
+    sulfur: int = 0
 
-    def __init__(
-            self,
-            destCityId,
-            destIslandId,
-            *,
-            transporters=0,
-            freighters=0,
-            capacity=5,
-            wood=0,
-            wine=0,
-            marble=0,
-            cristal=0,
-            sulfur=0
-        ) -> None:
-        ### Dorobić koniecznie ulepszenia dla transportowych i handli (500 + lv*20) (50000 + lv*500)
-        assert wood + wine + marble + cristal + sulfur <= (transporters * 500 + freighters * 50000) * capacity / 5, "Can't send"
-        self.destCityId = destCityId
-        self.destIslandId = destIslandId
-        self.transporters = transporters
-        self.freighters = freighters
-        self.capacity = capacity
-        self.wood = wood
-        self.wine = wine
-        self.marble = marble
-        self.cristal = cristal
-        self.sulfur = sulfur
+    def __post_init__(self):
+        assert self.wood + self.wine + self.marble + self.cristal + self.sulfur <= (
+            self.transporters * 500 + self.freighters * 50000
+        ) * self.capacity / 5, "Can't send"
+
+
+@dataclass
+class PlantColony(SendResources):
+    desiredPosition: int = field(default=0)
+        

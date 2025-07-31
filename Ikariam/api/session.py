@@ -2,7 +2,7 @@ from typing import Dict, Optional, List, Tuple
 import requests
 import numpy as np
 from functools import wraps
-from Ikariam.dataStructure import City, CityIsland, UpdateData, SendResources
+from Ikariam.dataStructure import City, CityIsland, UpdateData, SendResources, PlantColony
 from Ikariam.dataStructure import HEPHAEUSTUS, CITY_VIEW, ISLAND_VIEW, TEMPLE, RELATED_CITY, MIL_VIEW, WONDER
 from Ikariam.api.htmlparser import get_fleet, get_fleet_foreign, get_wonder_lv
 import time
@@ -77,7 +77,7 @@ class IkaBot:
         time.sleep(0.5)
         try:
             result = self.s.post(link, data=data).json()
-            self.data = UpdateData(**result[0][1])
+            self.data = UpdateData(result[0][1])
             if self.data.actionRequest is not None:
                 self.actionrequest = self.data.actionRequest
             if get_html:
@@ -88,6 +88,8 @@ class IkaBot:
                 self.update_cities(cities)
             return True
         except TypeError:
+            if not result:
+                return False
             if result[0][1][0] == "error":
                 raise ExpiredSession
         except Exception as e:
@@ -118,7 +120,7 @@ class IkaBot:
                 continue
             city_id = int(city["id"])
             city["relationship"] = city["relationship"] == "ownCity"
-            self.dict_of_cities[city_id] = City(**city)
+            self.dict_of_cities[city_id] = City(city)
 
     @ensure_action_request
     def get_islands(self, x, y, radius=0):
@@ -310,6 +312,36 @@ class IkaBot:
             "currentCityId": self.current_city_id,
             "templateView": TEMPLE,
             "actionRequest": self.actionrequest,
+            "ajax": 1
+        }
+        if self._send_request(data):
+            return self.data
+        return None
+
+    @ensure_action_request
+    def plant_colony(self, param: PlantColony):
+        data = {
+            "action": "transportOperations",
+            "function": "startColonization",
+            "islandId": param.destIslandId,
+            "cargo_people": 40,  # const
+            "cargo_gold": 9000,  # const
+            "desiredPosition": param.desiredPosition,
+            "actionRequest": self.actionrequest,
+            "cargo_resource": param.wood,
+            "cargo_tradegood1": param.wine,
+            "cargo_tradegood2": param.marble,
+            "cargo_tradegood3": param.cristal,
+            "cargo_tradegood4": param.sulfur,
+            "capacity": param.capacity,
+            "max_capacity": 5,  # const
+            "jetPropulsion": 0,  # dopalacz
+            "transporters": 3,  # na razie const
+            "position": param.desiredPosition,
+            "destinationIslandId": param.destIslandId,
+            "backgroundView": ISLAND_VIEW,
+            "currentIslandId": param.destIslandId,
+            "templateView": "colonize",
             "ajax": 1
         }
         if self._send_request(data):
