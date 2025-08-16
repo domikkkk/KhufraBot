@@ -6,17 +6,18 @@ from Ikariam.Islands import Map
 from Ikariam.queue import calc
 from Jap.keyboard import parse_foreach
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from Ikariam.Koszty import Composition, upkeep_h
 import asyncio
 from Ikariam.api.Cookie import cookie
 from Ikariam.api.session import ExpiredSession
-from Ikariam.api.rgBot import rgBot
+from Ikariam.api.rgBot import rgBot, Rg_Keeper
 import random
 import json
 from typing import Dict, Tuple
 from decorators import restrict_to_guilds
 import uuid
+import re
 
 
 intents = discord.Intents().default()
@@ -47,8 +48,8 @@ async def error(interaction: discord.Interaction, e: Exception):
     except Exception:
         canal = interaction.channel_id
     function = interaction.command.name
-    await me.send(f'Osoba {person} na kanale {canal} miała problem z funkcją\
-    {function} o godzinie {datetime.now()}:\n{e}')
+    await me.send(f'Osoba {person} na kanale {canal} miała problem z funkcją \
+{function} o godzinie {datetime.now()}:\n{e}')
 
 
 def create_maps() -> Dict[int, Dict]:
@@ -137,40 +138,46 @@ async def remindme_remove(interaction: discord.Interaction, uuid: str):
 
 
 @Khufra.tree.command()
-@app_commands.describe(what="Co zaktualizować?")
-@app_commands.choices(what=[
-    app_commands.Choice(name="Graczy", value=True),
-    app_commands.Choice(name="Skarbonki", value=False),
-])
+@app_commands.describe(date="Od kiedy? Format: YYYY-MM. Domyślnie bierze ostatnie 30 dni.")
 @restrict_to_guilds(guilds)
-async def update(interaction: discord.Interaction, what: app_commands.Choice[int]):
-    global maps
-    global rg_bot
-    if what.value:
-        maps[interaction.guild_id].scan_map()
-        await interaction.response.send_message("Zaktualizowano graczy z pliku")
-    else:
-        if guilds[interaction.guild_id]["name"] != "Meduza":
-            await interaction.response.send_message(f"Nie ma tu skarbonek", ephemeral=True)
-            return
-        await interaction.response.defer()
-        try:
-            me = Khufra.get_user(ME)
-            bugs = []
-            with open("HH.txt", "r") as f:
-                text = [line.rstrip("\n") for line in f]
-                for line in text:
-                    rg_keeper, owner = line.split(' - ')
-                    _, bug = rg_bot.load_owners(rg_keeper, owner)
-                    if bug is not None:
-                        bugs.append(bug)
-            await interaction.followup.send("Zaktualizowano skarbony")
-            if len(bugs) > 0:
-                for i in range(len(bugs)//5):
-                    await me.send(bugs[5*i:5*i+5])
-        except Exception as e:
-            await error(interaction, e)
+async def update_rg(interaction: discord.Interaction, date: str=None):
+    await interaction.response.defer()
 
+    def filtr_date(date: str=None) -> datetime:
+        if not date:
+            date = datetime.now() - timedelta(days=30)
+        else:
+            [year, month] = date.split('-')
+            year = int(year)
+            month = int(month)
+            date = datetime(year, month, day=1)
+        return date
+
+    global rg_bot
+    if guilds[interaction.guild_id]["name"] != "Meduza":
+        await interaction.followup.send(f"Nie ma tu skarbonek", ephemeral=True)
+        return
+    try:
+        channel = interaction.guild.get_channel(guilds[interaction.guild_id]["rg_channel"])
+        date = filtr_date(date)
+        await interaction.followup.send("Aktualizuje skarbonki, chwile to potrwa.{}".format(f" Od {date}" if date else ''))
+        await analyze_history(channel, date)
+    except ValueError:
+        await interaction.followup.send("Data musi być w formacie YYYY-MM")
+    except Exception as e:
+        await error(interaction, e)
+
+
+@Khufra.tree.command()
+@restrict_to_guilds(guilds)
+async def update_players(interaction: discord.Interaction):
+    global maps
+    await interaction.response.defer()
+    try:
+        maps[interaction.guild_id].scan_map()
+    except Exception as e:
+        await error(interaction, e)
+    await interaction.followup.send("Zaktualizowano graczy z pliku")
 
 @Khufra.tree.command(description="Zwraca liste sojuszy wraz z ich rg na skarbonkach")
 @restrict_to_guilds(guilds)
@@ -224,7 +231,7 @@ async def kana(interaction: discord.Interaction, text: str):
 @Khufra.tree.command(description="To chyba oczywiste...")
 async def ping(interaction: discord.Interaction):
     await interaction.response.send_message(
-        f"{round(Khufra.latency * 1000,1)}ms")
+        f"{round(Khufra.latency * 1000, 1)}ms")
 
 
 @Khufra.tree.command(description="Szuka możliwych koordynatów skąd przeciwnik\
@@ -402,3 +409,22 @@ async def check_generals():
                 f.write(str(e))
         finally:
             await asyncio.sleep(random.randint(8, 12))
+
+
+async def analyze_history(channel: discord.TextChannel, date: datetime=None):
+    global rg_bot
+
+    async def find_from_message(message: discord.Message):
+        pattern = r"Pomyślnie przypisano (.+?) do (.+)"
+        match = re.search(pattern, message.content)
+        if match:
+            owner = match.group(1)
+            rg_keeper = match.group(2)
+            if rg_keeper in rg_bot.rg_keepers:
+                if not rg_bot.rg_keepers[rg_keeper].whose:
+                    rg_bot.write_owner(rg_keeper, owner)
+
+    async for message in channel.history(limit=None, oldest_first=False, after=date):
+        if not message.author.bot:
+            continue
+        await find_from_message(message)

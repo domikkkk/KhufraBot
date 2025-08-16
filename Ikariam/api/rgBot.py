@@ -104,6 +104,9 @@ class rgBot(IkaBot):
         self.rg_keepers[rg_name].whose = owner
         return (owner, rg_name), None
 
+    def write_owner(self, rg_name: str, owner: str) -> None:
+        self.rg_keepers[rg_name].whose = owner
+
     def save_as(self):
         with open("rg_info.json", "w") as f:
             json.dump(self.rg_keepers, f, indent=4)

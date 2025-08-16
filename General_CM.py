@@ -112,7 +112,7 @@ async def check_general():
                 await channels[id].send(f"<@{ME}> potrzebna nowa sesja.")
                 break
             except Exception as e:
-                with open("general_error.txt", 'w') as f:
+                with open("general_error.txt", 'a') as f:
                     f.write(str(e))
 
 
