@@ -69,7 +69,10 @@ async def on_ready():
     synced = await Khufra.tree.sync()
     print(len(synced))    
     global rg_bot
+    global maps
     rg_bot = rgBot(cookie, 62)
+    for id in maps:
+        maps[id].scan_map()
     Khufra.loop.create_task(check_generals())
 
 
@@ -146,6 +149,8 @@ async def update_rg(interaction: discord.Interaction, date: str=None):
     def filtr_date(date: str=None) -> datetime:
         if not date:
             date = datetime.now() - timedelta(days=30)
+        elif date == 'all':
+            date = None
         else:
             [year, month] = date.split('-')
             year = int(year)
@@ -170,14 +175,26 @@ async def update_rg(interaction: discord.Interaction, date: str=None):
 
 @Khufra.tree.command()
 @restrict_to_guilds(guilds)
+async def save(interaction: discord.Interaction):
+    global rg_bot
+    try:
+        rg_bot.save_as()
+        await interaction.response.send_message("Zapisano")
+    except Exception as e:
+        await error(interaction, e)
+
+
+@Khufra.tree.command()
+@restrict_to_guilds(guilds)
 async def update_players(interaction: discord.Interaction):
     global maps
     await interaction.response.defer()
     try:
         maps[interaction.guild_id].scan_map()
+        await interaction.followup.send("Zaktualizowano graczy z pliku")
     except Exception as e:
         await error(interaction, e)
-    await interaction.followup.send("Zaktualizowano graczy z pliku")
+
 
 @Khufra.tree.command(description="Zwraca liste sojuszy wraz z ich rg na skarbonkach")
 @restrict_to_guilds(guilds)
@@ -415,14 +432,21 @@ async def analyze_history(channel: discord.TextChannel, date: datetime=None):
     global rg_bot
 
     async def find_from_message(message: discord.Message):
-        pattern = r"Pomyślnie przypisano (.+?) do (.+)"
-        match = re.search(pattern, message.content)
+        owner, rg_keeper = None, None
+
+        match = re.search(r"Pomyślnie przypisano (.+?) do (.+)", message.content)
         if match:
-            owner = match.group(1)
-            rg_keeper = match.group(2)
-            if rg_keeper in rg_bot.rg_keepers:
-                if not rg_bot.rg_keepers[rg_keeper].whose:
-                    rg_bot.write_owner(rg_keeper, owner)
+            owner, rg_keeper = match.groups()
+
+        else:
+            match = re.search(r"^(.*?) zszedł.*?(?:Czyje:\s*(\S+))?", message.content)
+            if match:
+                owner = match.group(1)             # nick
+                rg_keeper = match.group(2) or None # po "Czyje:"
+
+        if owner and rg_keeper:
+            if rg_keeper in rg_bot.rg_keepers and not rg_bot.rg_keepers[rg_keeper].whose:
+                rg_bot.write_owner(rg_keeper, owner)
 
     async for message in channel.history(limit=None, oldest_first=False, after=date):
         if not message.author.bot:

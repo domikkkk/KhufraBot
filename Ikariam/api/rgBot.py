@@ -113,7 +113,8 @@ class rgBot(IkaBot):
 
     def get_ranking(self) -> Dict[str, int]:
         ranking: Dict[str, int] = {}
-        for rg_keeper in self.rg_keepers.values():
+        for name in self.rg_keepers:
+            rg_keeper = self.rg_keepers[name]
             if not rg_keeper.whose:
                 continue
             whose = extract_brackets(rg_keeper.whose)
@@ -121,7 +122,10 @@ class rgBot(IkaBot):
                 continue
             rg = int(rg_keeper.rg.replace(',', ''))
             for every in whose:
+                if len(whose) > 5:
+                    continue
                 every = every.lower()
+                every = every.replace('с', 'c').replace('і', 'i')  # anty death tymczasowo
                 if not every in ranking:
                     ranking[every] = 0
                 ranking[every] += rg
