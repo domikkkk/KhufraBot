@@ -122,7 +122,7 @@ class rgBot(IkaBot):
                 continue
             rg = int(rg_keeper.rg.replace(',', ''))
             for every in whose:
-                if len(whose) > 5:
+                if len(every) > 5:
                     continue
                 every = every.lower()
                 every = every.replace('с', 'c').replace('і', 'i')  # anty death tymczasowo

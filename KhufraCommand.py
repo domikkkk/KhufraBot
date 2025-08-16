@@ -149,8 +149,6 @@ async def update_rg(interaction: discord.Interaction, date: str=None):
     def filtr_date(date: str=None) -> datetime:
         if not date:
             date = datetime.now() - timedelta(days=30)
-        elif date == 'all':
-            date = None
         else:
             [year, month] = date.split('-')
             year = int(year)
@@ -167,6 +165,7 @@ async def update_rg(interaction: discord.Interaction, date: str=None):
         date = filtr_date(date)
         await interaction.followup.send("Aktualizuje skarbonki, chwile to potrwa.{}".format(f" Od {date}" if date else ''))
         await analyze_history(channel, date)
+        await interaction.followup.send("Ukończono")
     except ValueError:
         await interaction.followup.send("Data musi być w formacie YYYY-MM")
     except Exception as e:
