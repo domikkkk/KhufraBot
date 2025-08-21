@@ -258,6 +258,8 @@ class UpdateData:
     headerdata: headerData
 
     def __init__(self, kwargs: dict):
+        if isinstance(kwargs, list):
+            return
         self.actionRequest = kwargs.get("actionRequest")
         self.backgroundData = backGroundData(kwargs.get("backgroundData"))
         self.headerdata = headerData(kwargs.get("headerData"))

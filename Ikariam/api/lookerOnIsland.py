@@ -1,10 +1,50 @@
 from Ikariam.api.session import IkaBot
 from Ikariam.dataStructure import PlantColony
+import time
+import random
 
 
-cookie = 'gf-cookie-consent-4449562312=|7|1; gf_pz_token=b381f18f-a5a3-4ab9-b9d2-9ac474fe2200; GTPINGRESSCOOKIE=6093c639d816e50734589fb943cb566e; cf_clearance=mh0SHXEiuu_o0qcvqn1pnp_IqHJlclFy30a.1QY5sOo-1745093982-1.2.1.1-aiuR.0HhQ87nIUD3kqmhImpV29yBELe91DGGGofnOdz94Jr8dS8ToewLcGfmd.HKXhxPDxKz4DtDfRwjSoYW3fqAe2Z3_a_4kClABErUz_G7pV3DEruckroyrlFCjXbojQ1B9RvGMbpBlnaUtqXOhLkPpT1zCTN3gG.ACvWxVCeW6HE_tgqPtV9krXZ4LaI2UupBmaLYZn6H3GSoptPN_oIrPfUmvu3i26xk2atZaw8HT22cTkgXELkb5pdgeVwKa3Dhtg0GPmgqqpEI5Wdsz5ztkvKbHlz1oEAqLmT6zfv0vvX5qowtv15lALWioB2JoFUSSbS5Z53WjXZyh3yfplwBpKb2knuFOb59VIzPLLo; PHPSESSID=s7hs4jqmnl5t9t3kv9sqa79oq5; ikariam_loginMode=0; gf-token-production=4d3444f2-17e0-42d5-9871-9a4f26ebba12; ik_friendslist_100068=expanded%3Dfalse%3Bpage%3D0%3Bcontains%3Dfunction%28e%29%7Bfor%28var%20t%3Bpath%3D/%3Bpath=/; pc_idt=AHKDqNaAWEL7Y4GNECuxj6WSUjmxg_3UdwQDvz5BPT90RECsnfaAdJSzRlkzOa_T34AnDEW4QUNUjf6S-ETzeGwhRbN8ERUks0UVcYJk5fZ-9BnUBgqv5tlRKkGLHnL0PClHCaRQI2WJy_k3eS0wDvbpBPVg7l-_uNGv; __cf_bm=PX7j4SkTLnfVLQINTKgPMMbZl7kxmJiWU0JM10Ttf7E-1753565641-1.0.1.1-mpQcpcIcvEPXbRbGL.Z31naSC0oP3nTOdxC.ukR859IB2H9dh1dI538HJMHhz30LatKLOLvrFRSJFIaGf_hfKZYebhaQw3vz_u0IIsMF0TI; ikariam=101964_ccc6a223b734aac359d190e61fdaf2da'
+class Planter(IkaBot):
+    def __init__(self, cookie, server):
+        super().__init__(cookie, server)
 
+    def choose_city(self, how_many_spots=1):
+        self.set_action_request()
 
-bot = IkaBot(cookie, 62)
-param = PlantColony(desiredPosition=3, transporters=3, destIslandId=2868)
-bot.plant_colony(param)
+        print("Szukam wyspy z której puścić")
+
+        for city in self.dict_of_cities.values():
+            data = self.change_city(city.id)
+
+            print(f"Sprawdzam miasto {city.name}")
+
+            if not data:
+                raise ValueError
+            wood = data.headerdata.currentResources.wood
+            if wood > 1250 * how_many_spots:
+
+                print(f"Znaleziona: {city.coords} - {city.name}")
+
+                return True
+            time.sleep(1)
+        return False
+
+    def lookAfter(self, x, y, how_many_spots=1):
+        if not self.choose_city(how_many_spots):
+            return
+
+        islandId = self.get_island_id(x, y)
+        time.sleep(1)
+
+        while how_many_spots > 0:
+            try:
+                cities = self.get_island_info(islandId)
+                for i, city in enumerate(cities):
+                    if city.id == -1 and i != 16:
+                        self.plant_colony(PlantColony(desiredPosition=i, transporters=3, destIslandId=islandId))
+                        how_many_spots -= 1
+                        time.sleep(1)
+            except Exception:
+                pass
+            finally:
+                time.sleep(random.randint(8, 12))

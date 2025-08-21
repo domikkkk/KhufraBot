@@ -6,6 +6,7 @@ from Ikariam.dataStructure import City, CityIsland, UpdateData, SendResources, P
 from Ikariam.dataStructure import HEPHAEUSTUS, CITY_VIEW, ISLAND_VIEW, TEMPLE, RELATED_CITY, MIL_VIEW, WONDER
 from Ikariam.api.htmlparser import get_fleet, get_fleet_foreign, get_wonder_lv
 import time
+from datetime import datetime
 
 
 class ExpiredSession(Exception):
@@ -93,7 +94,7 @@ class IkaBot:
             if result[0][1][0] == "error":
                 raise ExpiredSession
         except Exception as e:
-            print(e)
+            print(datetime.now(), e)
         return False
 
     def set_action_request(self) -> None:

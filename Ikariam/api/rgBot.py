@@ -8,9 +8,6 @@ from bs4 import BeautifulSoup, Tag
 from Ikariam.api.htmlparser import extract_brackets
 
 
-
-
-
 class rgBot(IkaBot):
     def __init__(self, cookie, server) -> None:
         super().__init__(cookie, server)
@@ -108,8 +105,9 @@ class rgBot(IkaBot):
         self.rg_keepers[rg_name].whose = owner
 
     def save_as(self):
+        data = {name: vars(self.rg_keepers[name]) for name in self.rg_keepers }
         with open("rg_info.json", "w") as f:
-            json.dump(self.rg_keepers, f, indent=4)
+            json.dump(data, f, indent=4)
 
     def get_ranking(self) -> Dict[str, int]:
         ranking: Dict[str, int] = {}
