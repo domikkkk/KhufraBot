@@ -3,7 +3,6 @@ from Ikariam.api.session import ExpiredSession, IkaBot, ensure_action_request
 import requests
 from http.client import IncompleteRead
 from Ikariam.dataStructure import Attack, Attacks, Fleets, Troops
-import time
 from Ikariam.api.htmlparser import get_attacks, get_units
 
 

@@ -1,11 +1,9 @@
-import discord.ext.commands
 from Common import GENERAL_CM, TEST
 from discord.ext import commands
 from discord import app_commands
 import discord
 import random
 from Common import ME
-import discord.ext
 from Ikariam.api.generalBot import General
 from Ikariam.api.session import ExpiredSession
 import asyncio
@@ -114,7 +112,7 @@ async def check_general():
                 await channels[id].send(f"<@{ME}> potrzebna nowa sesja.")
                 break
             except Exception as e:
-                with open("general_error.txt", 'w') as f:
+                with open("general_error.txt", 'a') as f:
                     f.write(str(e))
 
 

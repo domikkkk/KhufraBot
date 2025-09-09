@@ -50,21 +50,22 @@ class Scanner:
 
     def correct(self, bugs):
         with open(self.path, 'r') as f:
-            res = json.load(f)
+            islands = json.load(f)
         for bug in bugs:
             x, y = bug
-            id = int(res[x][y]["id"])
+            id = int(islands[x][y]["id"])
             try:
                 time.sleep(random.randint(8, 12))
                 cities = self.bot.get_island_info(id)
+                cities = [city for city in cities if city.id != -1]
+                islands[x][y]["cities"] = [vars(city) for city in cities]
             except Exception as e:
                 print(x, y, e)
                 with open(self.path, 'w') as f:
-                    json.dump(res, f, indent=4)
+                    json.dump(islands, f, indent=4)
                 continue
-            res[x][y]["cities"] = [vars(city) for city in cities]
         with open(self.path, 'w') as f:
-            json.dump(res, f, indent=4)
+            json.dump(islands, f, indent=4)
 
     def get_mapped(self, string: str):
         copy = ''
