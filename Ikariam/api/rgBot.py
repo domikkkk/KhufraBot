@@ -94,6 +94,7 @@ class rgBot(IkaBot):
         return possibilities
 
     def load_owners(self, rg_keeper: str, owner: str) -> Tuple[Optional[Tuple], Optional[Tuple]]:
+        owner = owner.strip()
         rg_names = self.guess_rg_holder(rg_keeper)
         if len(rg_names) == 0:
             return None, (rg_keeper, owner)
