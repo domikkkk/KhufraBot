@@ -69,6 +69,7 @@ class IkaBot:
 
     def _send_request(self,
                      data: Dict,
+                     *,
                      index: bool=True,
                      get_html: bool=False,
                      update_cities: bool=False
@@ -79,7 +80,7 @@ class IkaBot:
         try:
             result = self.s.post(link, data=data).json()
             self.data = UpdateData(result[0][1])
-            if self.data.actionRequest is not None:
+            if self.data is not None:
                 self.actionrequest = self.data.actionRequest
             if get_html:
                 self.updateTemplateData = result[2][1]
@@ -120,7 +121,7 @@ class IkaBot:
             if not isinstance(city, dict):
                 continue
             city_id = int(city["id"])
-            city["relationship"] = city["relationship"] == "ownCity"
+            city["is_own"] = city["relationship"] == "ownCity"
             self.dict_of_cities[city_id] = City(city)
 
     @ensure_action_request

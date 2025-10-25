@@ -26,6 +26,8 @@ ISLAND_VIEW_TEMPLATE = ""
 
 TEMPLE = "temple"
 WONDER = "wonder"
+EMBASSY = "embassy"
+
 MIL_VIEW = "cityMilitary"
 RELATED_CITY = "relatedCities"
 

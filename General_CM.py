@@ -1,4 +1,4 @@
-from Common import GENERAL_CM, TEST
+from Common import GENERAL
 from discord.ext import commands
 from discord import app_commands
 import discord
@@ -71,7 +71,6 @@ async def get_units(interaction: discord.Interaction, what: app_commands.Choice[
     try:
         units = generals[interaction.guild_id].check_alliance_units(what.value)
         units_names = list(asdict(list(units.values())[0]).keys())
-        # body = [[player] + list(asdict(units[player]).values()) for player in units]
         embed = discord.Embed(
             title="Ląd sojuszu" if what.value else "Flota sojuszu",
             color=get_color(),
@@ -86,6 +85,7 @@ async def get_units(interaction: discord.Interaction, what: app_commands.Choice[
         await interaction.followup.send(embed=embed)
     except ExpiredSession:
         await interaction.followup.send(f"<@{ME}> potrzebna nowa sesja.")
+        exit(0)
     except Exception as e:
         await error(interaction, e)
 
@@ -96,7 +96,7 @@ async def check_general():
     loop = asyncio.get_running_loop()
     channels = {id: General_Bot.get_channel(guilds[id]["general_warnings"]) for id in guilds}
     while not General_Bot.is_closed():
-        await asyncio.sleep(300)
+        await asyncio.sleep(180)
         for id in channels:
             try:
                 attacks = await loop.run_in_executor(None, generals[id].analyse_attacks)
@@ -110,10 +110,10 @@ async def check_general():
                     await channels[id].send(f"<t:{attack.when}:R> {attack.action} - {attack.who.name} {attack.who.f} => {whom} {attack.whom.f} - units: {attack.units}")
             except ExpiredSession:
                 await channels[id].send(f"<@{ME}> potrzebna nowa sesja.")
-                break
+                exit(0)
             except Exception as e:
                 with open("general_error.txt", 'a') as f:
                     f.write(str(e))
 
 
-General_Bot.run(GENERAL_CM)
+General_Bot.run(GENERAL)
