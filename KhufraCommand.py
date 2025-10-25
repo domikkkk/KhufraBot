@@ -198,9 +198,6 @@ async def update_players(interaction: discord.Interaction):
 @Khufra.tree.command(description="Zwraca liste sojuszy wraz z ich rg na skarbonkach")
 @restrict_to_guilds(guilds)
 async def rg_list(interaction: discord.Interaction):
-    if guilds[interaction.guild_id]["name"] != "Meduza":
-        await interaction.response.send_message(f"Nie ma tu skarbonek", ephemeral=True)
-        return
     await interaction.response.defer()
     try:
         ranking = rg_bot.get_ranking()
@@ -216,9 +213,6 @@ async def rg_list(interaction: discord.Interaction):
 @app_commands.describe(name="Nazwa skarbonki")
 @restrict_to_guilds(guilds)
 async def owner(interaction: discord.Interaction, name: str):
-    if guilds[interaction.guild_id]["name"] != "Meduza":
-        await interaction.response.send_message(f"Nie ma tu skarbonek", ephemeral=True)
-        return
     await interaction.response.defer()
     try:
         rg_keepers = rg_bot.guess_rg_holder(name)
