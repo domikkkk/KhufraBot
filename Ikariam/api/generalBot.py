@@ -104,4 +104,4 @@ class General(IkaBot):
             "ajax": 1
         }
         if self._send_request(data, get_html=True):
-            return get_units(self.html[1])
+            return get_units(self.html[1], land)
