@@ -50,6 +50,20 @@ def extract_brackets(content):
     return re.findall(r'\[(.*?)\]', content)
 
 
+def get_actionRequest(html) -> Optional[str]:
+    soup = BeautifulSoup(html, 'html.parser')
+    tag = soup.find("input", {"name": "actionRequest"})
+    return tag.get("value")
+
+
+def get_currentcityId(html) -> Optional[int]:
+    pattern = r"currentCityId:\s*(\d+)"
+    match = re.search(pattern, html)
+    if match:
+        city_id = int(match.group(1))
+        return city_id
+
+
 def get_attacks(html) -> List[Attack]:
     soup = BeautifulSoup(html, 'html.parser')
     mainview = soup.find('div', id='mainview')

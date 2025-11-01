@@ -21,7 +21,10 @@ class Planter(IkaBot):
             if not data:
                 raise ValueError
             wood = data.headerdata.currentResources.wood
-            if wood > 1250 * how_many_spots:
+            free_people = data.headerdata.currentResources.citizens
+            gold = data.headerdata.gold
+            free_transporters = data.headerdata.freeTransporters
+            if wood > 1250 * how_many_spots and free_people > 40 * how_many_spots and gold > 9000 * how_many_spots and free_transporters > 3 * how_many_spots:
 
                 print(f"Znaleziona: {city.coords} - {city.name}")
 

@@ -17,3 +17,9 @@ Ika_Map/package-lock.json
 Ika_Map/*.json
 config.json
 test.py
+accounts.yaml
+a.py
+b.py
+c.py
+d.py
+config.yml

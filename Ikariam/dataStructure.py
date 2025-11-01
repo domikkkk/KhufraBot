@@ -229,7 +229,7 @@ class curResources:
 class headerData:
     freeFreighters: int  # transportowce
     freeTransporters: int  # handlowe
-    gold: str
+    gold: float
     godGoldResult: float
     income: float
     maxActionPoints: int
@@ -242,7 +242,7 @@ class headerData:
     def __init__(self, kwargs: dict):
         self.freeFreighters = kwargs.get("freeFreighters")
         self.freeTransporters = kwargs.get("freeTransporters")
-        self.gold = kwargs.get("gold")
+        self.gold = float(kwargs.get("gold", "0"))
         self.godGoldResult = kwargs.get("godGoldResult")
         self.income = kwargs.get("income")
         self.maxActionPoints = kwargs.get("maxActionPoints")
