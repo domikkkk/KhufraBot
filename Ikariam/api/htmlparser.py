@@ -4,7 +4,7 @@ from Ikariam.dataStructure import Attack, Fleets, Troops, Player
 from typing import List, Optional, Dict, Union, Tuple
 
 
-def get_fleet(html):
+def get_fleet(html: str):
     soup = BeautifulSoup(html, 'html.parser')
     tab_ships_div = soup.find('div', id='tabShips')
     content = tab_ships_div.find_all('div', class_='contentBox01h')[0]
@@ -21,7 +21,7 @@ def get_fleet(html):
     return ships_data
 
 
-def get_fleet_foreign(html):
+def get_fleet_foreign(html: str):
     soup = BeautifulSoup(html, 'html.parser')
     content = soup.find_all('div', class_='contentBox01h')[0]
     row_troops = content.find_all('td', class_='rowTroop')
@@ -36,7 +36,7 @@ def get_fleet_foreign(html):
 
 
 
-def get_date(html):
+def get_date(html: str):
     script_tag = html.find('script', string=True).get_text()
     match = re.search(r'enddate:\s*(\d+)', script_tag)
     return int(match.group(1))
@@ -50,13 +50,13 @@ def extract_brackets(content):
     return re.findall(r'\[(.*?)\]', content)
 
 
-def get_actionRequest(html) -> Optional[str]:
+def get_actionRequest(html: str) -> Optional[str]:
     soup = BeautifulSoup(html, 'html.parser')
     tag = soup.find("input", {"name": "actionRequest"})
     return tag.get("value")
 
 
-def get_currentcityId(html) -> Optional[int]:
+def get_currentcityId(html: str) -> Optional[int]:
     pattern = r"currentCityId:\s*(\d+)"
     match = re.search(pattern, html)
     if match:
@@ -64,7 +64,7 @@ def get_currentcityId(html) -> Optional[int]:
         return city_id
 
 
-def get_attacks(html) -> List[Attack]:
+def get_attacks(html: str) -> List[Attack]:
     soup = BeautifulSoup(html, 'html.parser')
     mainview = soup.find('div', id='mainview')
     table = mainview.find('table', class_="embassyTable")
@@ -82,7 +82,7 @@ def get_attacks(html) -> List[Attack]:
     return attacks
 
 
-def get_units(html, land=True) -> Dict[str, Optional[Union[Troops, Fleets]]]:
+def get_units(html: str, land=True) -> Dict[str, Optional[Union[Troops, Fleets]]]:
     soup = BeautifulSoup(html, 'html.parser')
     mainview = soup.find('div', id='mainview')
     tables = mainview.find_all('table', class_="table01 embassyTable troops")
@@ -99,13 +99,13 @@ def get_units(html, land=True) -> Dict[str, Optional[Union[Troops, Fleets]]]:
     return units
 
 
-def get_wonder_lv(html) -> int:
+def get_wonder_lv(html: str) -> int:
     soup = BeautifulSoup(html, 'html.parser')
     lv = int(soup.find('div', id='currentWonderLevel').get_text(strip=True))
     return lv
 
 
-def get_transporter_info(html, template) -> Dict[str, int]:
+def get_transporter_info(html: str, template) -> Dict[str, int]:
     soup = BeautifulSoup(html, 'html.parser')
     views = soup.find_all('div', class_='tooltip')
     capacities = {}

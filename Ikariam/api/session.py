@@ -4,9 +4,10 @@ import numpy as np
 from functools import wraps
 from Ikariam.dataStructure import City, CityIsland, UpdateData, SendResources, PlantColony
 from Ikariam.dataStructure import HEPHAEUSTUS, CITY_VIEW, ISLAND_VIEW, TEMPLE, RELATED_CITY, MIL_VIEW, WONDER
-from Ikariam.api.htmlparser import get_fleet, get_fleet_foreign, get_wonder_lv
+from Ikariam.api.htmlparser import get_fleet, get_fleet_foreign, get_wonder_lv, get_actionRequest, get_currentcityId
 import time
 from datetime import datetime
+from Ikariam.api.login import get_in
 
 
 class ExpiredSession(Exception):
@@ -39,24 +40,8 @@ def ensure_action_request(func):
 
 
 class IkaBot:
-    def __init__(self, cookie, server: int) -> None:
-        self.s = requests.Session()
-        self.index = f"https://s{server}-pl.ikariam.gameforge.com/index.php"
-        self.link = f"https://s{server}-pl.ikariam.gameforge.com"
-        self.s.headers = {
-            "Cookie": cookie,
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
-            "x-requested-with": "XMLHttpRequest",
-            "Host": f"s{server}-pl.ikariam.gameforge.com",
-            "Connection": "keep-alive",
-            "Cache-Control": "max-age=0",
-            "Accept-Language": "pl-PL,pl;q=0.9,en-US;q=0.8,en;q=0.7",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-            "Accept-Encoding": "gzip, deflate, br, zstd",
-            "Sec-Ch-Ua-Platform": "Windows",
-            "Sec-Fetch-Mode": "navigate",
-            "Upgrade-Insecure-Requests": "1"
-        }
+    def __init__(self, gf_token: str, nick: str) -> None:
+        self.s: requests.Session=None
         self.actionrequest: str = None
         self.dict_of_cities: Dict[int, City] = {}
         self.current_city_id: int = -1
@@ -66,6 +51,31 @@ class IkaBot:
         self.html = None
         self.updateTemplateData = None
         self.wonders: Dict[str, Tuple[int]] = {}  # słownik cudów - [id miasta, pozycja świątyni]
+        self._log_in(gf_token, nick)
+
+    def _log_in(self, gf_token: str, nick: str):
+        try:
+            self.s, html, server = get_in(gf_token, nick)
+        except Exception as e:
+            print(e, "Logowanie")
+            exit(1)
+        self.actionrequest: str = get_actionRequest(html)
+        self.current_city_id = get_currentcityId(html)
+        self.index = f"https://s{server["number"]}-{server["language"]}.ikariam.gameforge.com/index.php"
+        self.link = f"https://s{server["number"]}-{server["language"]}.ikariam.gameforge.com"
+        self.s.headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+            "x-requested-with": "XMLHttpRequest",
+            "Host": f"s{server["number"]}-{server["language"]}.ikariam.gameforge.com",
+            "Connection": "keep-alive",
+            "Cache-Control": "max-age=0",
+            "Accept-Language": "pl-PL,pl;q=0.9,en-US;q=0.8,en;q=0.7",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "Accept-Encoding": "gzip, deflate, br, zstd",
+            "Sec-Ch-Ua-Platform": "Windows",
+            "Sec-Fetch-Mode": "navigate",
+            "Upgrade-Insecure-Requests": "1"
+        }
 
     def _send_request(self,
                      data: Dict,

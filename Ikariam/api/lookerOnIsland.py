@@ -5,8 +5,8 @@ import random
 
 
 class Planter(IkaBot):
-    def __init__(self, cookie, server):
-        super().__init__(cookie, server)
+    def __init__(self, gf_token: str, nick: str):
+        super().__init__(gf_token, nick)
 
     def choose_city(self, how_many_spots=1):
         self.set_action_request()

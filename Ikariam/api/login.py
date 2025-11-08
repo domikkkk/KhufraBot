@@ -5,12 +5,14 @@ import os
 import subprocess
 from pathlib import Path
 import yaml
-from htmlparser import get_actionRequest, get_currentcityId
+from typing import Tuple, Dict
 
 do_ssl_verify = True
 
 publicAPIServerDomain = "ikagod.twilightparadox.com"
 
+
+# taken from https://github.com/Ikabot-Collective/ikabot/blob/29f8437919fcd852d9d165650dad97278804b778/ikabot/helpers/dns.py
 
 def getDNSTXTRecordWithSocket(domain, DNS_server="8.8.8.8"):
     """Returns the TXT record from the DNS server for the given domain
@@ -249,6 +251,9 @@ def getNewBlackBoxToken():
     return "tra:" + response
 
 
+# original
+
+
 def read() -> dict:
     filename = Path.cwd() / "accounts.yaml"
     data = {}
@@ -297,7 +302,7 @@ def check_accounts(gf_token: str):
     return accounts
 
 
-def get_in(gf_token: str, nick: str) -> str:
+def get_in(gf_token: str, nick: str) -> Tuple[requests.Session, str, Dict]:
     accounts = check_accounts(gf_token)
     if not accounts:
         return None
@@ -336,7 +341,5 @@ def get_in(gf_token: str, nick: str) -> str:
     s.headers = headers
     res = s.post("https://lobby.ikariam.gameforge.com/api/users/me/loginLink", json=data)
     url = res.json()["url"]
-    return url
     html = s.get(url, verify=do_ssl_verify).text
-    actionRequest = get_actionRequest(html)
-    cityId = get_currentcityId(html)
+    return s, html, server

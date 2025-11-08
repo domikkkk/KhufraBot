@@ -9,8 +9,8 @@ from Ikariam.api.htmlparser import extract_brackets
 
 
 class rgBot(IkaBot):
-    def __init__(self, cookie, server) -> None:
-        super().__init__(cookie, server)
+    def __init__(self, gf_token: str, nick: str) -> None:
+        super().__init__(gf_token, nick)
         self.rg_keepers: Dict[str, Rg_Keeper] = {}
 
     @ensure_action_request
