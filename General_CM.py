@@ -7,11 +7,12 @@ from Common import ME
 from Ikariam.api.generalBot import General
 from Ikariam.api.session import ExpiredSession
 import asyncio
-from typing import Dict
+from typing import Dict, Tuple, List
 import json
-from decorators import restrict_to_guilds
+import decorators
 from datetime import datetime
 from dataclasses import asdict
+import time
 
 
 intents = discord.Intents().default()
@@ -27,6 +28,9 @@ with open("config.json", 'r') as f:
 
 # logging.basicConfig(filename="Khufra.log", level=logging.DEBUG, format='%(levelname)s - %(asctime)s - %(message)s')
 General_Bot = commands.Bot(command_prefix='?', intents=intents)
+
+tasks: Dict[int, Tuple[asyncio.Task, int]] = {}
+whom_timeout: List[str] = []
 
 get_color = lambda: random.randint(0, 0xffffff)%(0xffffff+1)
 
@@ -53,8 +57,7 @@ async def on_ready():
     synced = await General_Bot.tree.sync()
     print(synced)
     global generals
-    generals = {id: General(guilds[id]["cookie"], guilds[id]["id"]) for id in guilds}
-    print(generals)
+    generals = {id: General(guilds[id]["gf_token"], guilds[id]["nick"]) for id in guilds}
     General_Bot.loop.create_task(check_general())
 
 
@@ -64,7 +67,7 @@ async def on_ready():
     app_commands.Choice(name="Ląd", value=True),
     app_commands.Choice(name="Flote", value=False),
 ])
-@restrict_to_guilds(guilds)
+@decorators.restrict_to_guilds(guilds)
 async def get_units(interaction: discord.Interaction, what: app_commands.Choice[int]):
     global generals
     await interaction.response.defer()
@@ -90,6 +93,42 @@ async def get_units(interaction: discord.Interaction, what: app_commands.Choice[
         await error(interaction, e)
 
 
+@General_Bot.tree.command()
+@app_commands.describe(duration="Czas na przerwę od ataków.")
+@app_commands.choices(duration=[
+    app_commands.Choice(name="60s", value=60),
+    app_commands.Choice(name="2min", value=120),
+    app_commands.Choice(name="5min", value=300),
+    app_commands.Choice(name="15min", value=900),
+])
+@decorators.check_role(["olek"])
+@decorators.restrict_to_guilds(guilds)
+async def disable(interaction: discord.Interaction, duration: app_commands.Choice[int]):
+    stamper = round(time.time()) + duration.value
+    user_id = interaction.user.id
+    players = guilds[interaction.guild_id].get("players")
+    player = players[str(user_id)]
+
+    async def sleep_task():
+        await asyncio.sleep(duration.value)
+        await interaction.user.send(f"Skończył się czas obijania...")
+        if user_id in tasks:
+            whom_timeout.remove(player)
+            del tasks[user_id]
+
+    if user_id in tasks:
+        stamp = tasks[user_id][1]
+        date = datetime.fromtimestamp(stamp)
+        await interaction.response.send_message(f"Już jesteś pominięty do {date}", ephemeral=True)
+        return
+    
+    task = asyncio.create_task(sleep_task())
+    tasks[user_id] = task, stamper
+    whom_timeout.append(player)
+    date = datetime.fromtimestamp(stamper)
+    await interaction.response.send_message(f"Jesteś zbanowany do {date}", ephemeral=True)
+
+
 async def check_general():
     await General_Bot.wait_until_ready()
     global generals
@@ -100,13 +139,13 @@ async def check_general():
         for id in channels:
             try:
                 attacks = await loop.run_in_executor(None, generals[id].analyse_attacks)
-                players = guilds[id].get("players")
+                # players = guilds[id].get("players")
                 for attack in attacks:
-                    if attack.who.name in "Barbarzyńcy" or attack.units == '1':
-                        continue
                     whom = attack.whom.name
-                    if players is not None:
-                        whom = f"<@{players.get(whom, whom)}>"
+                    if attack.who.name in "Barbarzyńcy" or attack.units == '1' or whom in whom_timeout:
+                        continue
+                    # if players is not None:
+                    #     whom = f"<@{players.get(whom, whom)}>"
                     await channels[id].send(f"<t:{attack.when}:R> {attack.action} - {attack.who.name} {attack.who.f} => {whom} {attack.whom.f} - units: {attack.units}")
             except ExpiredSession:
                 await channels[id].send(f"<@{ME}> potrzebna nowa sesja.")

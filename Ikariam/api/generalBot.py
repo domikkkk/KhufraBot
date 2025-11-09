@@ -18,6 +18,7 @@ def ensure_embassy(func):
 class General(IkaBot):
     def __init__(self, gf_token: str, nick: str) -> None:
         super().__init__(gf_token, nick)
+        self.set_action_request()
         self.embassy_position: int = -1
         self.occupy = {}
         self.open_battle = {}
