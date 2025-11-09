@@ -61,12 +61,12 @@ class IkaBot:
             exit(1)
         self.actionrequest: str = get_actionRequest(html)
         self.current_city_id = get_currentcityId(html)
-        self.index = f"https://s{server["number"]}-{server["language"]}.ikariam.gameforge.com/index.php"
-        self.link = f"https://s{server["number"]}-{server["language"]}.ikariam.gameforge.com"
+        self.index = f"https://s{server['number']}-{server['language']}.ikariam.gameforge.com/index.php"
+        self.link = f"https://s{server['number']}-{server['language']}.ikariam.gameforge.com"
         self.s.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
             "x-requested-with": "XMLHttpRequest",
-            "Host": f"s{server["number"]}-{server["language"]}.ikariam.gameforge.com",
+            "Host": f"s{server['number']}-{server['language']}.ikariam.gameforge.com",
             "Connection": "keep-alive",
             "Cache-Control": "max-age=0",
             "Accept-Language": "pl-PL,pl;q=0.9,en-US;q=0.8,en;q=0.7",
