@@ -93,12 +93,12 @@ async def get_units(interaction: discord.Interaction, what: app_commands.Choice[
         await error(interaction, e)
 
 
-@General_Bot.tree.command()
+@General_Bot.tree.command(description="Tylko dla wtajemniczonych")
 @app_commands.describe(duration="Czas na przerwę od ataków.")
 @app_commands.choices(duration=[
-    app_commands.Choice(name="60s", value=60),
-    app_commands.Choice(name="2min", value=120),
+    app_commands.Choice(name="3min", value=180),
     app_commands.Choice(name="5min", value=300),
+    app_commands.Choice(name="10min", value=600),
     app_commands.Choice(name="15min", value=900),
 ])
 @decorators.check_role(["olek"])
