@@ -55,18 +55,18 @@ class IkaBot:
 
     def _log_in(self, gf_token: str, nick: str):
         try:
-            self.s, html, server = get_in(gf_token, nick)
+            self.s, html, self.server = get_in(gf_token, nick)
         except Exception as e:
             print(e, "Logowanie")
             exit(1)
         self.actionrequest: str = get_actionRequest(html)
         self.current_city_id = get_currentcityId(html)
-        self.index = f"https://s{server['number']}-{server['language']}.ikariam.gameforge.com/index.php"
-        self.link = f"https://s{server['number']}-{server['language']}.ikariam.gameforge.com"
+        self.index = f"https://s{self.server['number']}-{self.server['language']}.ikariam.gameforge.com/index.php"
+        self.link = f"https://s{self.server['number']}-{self.server['language']}.ikariam.gameforge.com"
         self.s.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
             "x-requested-with": "XMLHttpRequest",
-            "Host": f"s{server['number']}-{server['language']}.ikariam.gameforge.com",
+            "Host": f"s{self.server['number']}-{self.server['language']}.ikariam.gameforge.com",
             "Connection": "keep-alive",
             "Cache-Control": "max-age=0",
             "Accept-Language": "pl-PL,pl;q=0.9,en-US;q=0.8,en;q=0.7",
@@ -109,19 +109,21 @@ class IkaBot:
         return False
 
     def set_action_request(self) -> None:
-        data = {
-            "highscoreType": "score", #"army_score_main",  # score
-            "offset": -1,
-            "view": "highscore",
-            "sbm": "Submit",
-            "searchUser": 'Furi',
-            "backgroundView": CITY_VIEW,
-            "currentCityId": '',
-            "templateView": "highscore",
-            "actionRequest": self.actionrequest,
-            "ajax": 1
-        }
-        self._send_request(data, update_cities=True)
+        # data = {
+        #     "highscoreType": "score", #"army_score_main",  # score
+        #     "offset": -1,
+        #     "view": "highscore",
+        #     "sbm": "Submit",
+        #     "searchUser": 'Furi',
+        #     "backgroundView": CITY_VIEW,
+        #     "currentCityId": '',
+        #     "templateView": "highscore",
+        #     "actionRequest": self.actionrequest,
+        #     "ajax": 1
+        # }
+        # self._send_request(data, update_cities=True)
+        html = self.s.get(self.link).content
+        self.actionrequest = get_actionRequest(html)
 
     def update_cities(self, cities: dict) -> None:
         self.dict_of_cities = {}
