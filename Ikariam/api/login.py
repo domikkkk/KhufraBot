@@ -277,6 +277,16 @@ def save(accounts: dict, gf_token: str):
             yaml.dump(data, f, indent=4)
 
 
+def save_cookie(gf_token: str, nick: str, cookie: dict):
+    data = read()
+    filename = Path.cwd() / "accounts.yaml"
+    for account in data[gf_token]:
+        if nick == account["name"]:
+            account["cookie"] = cookie
+    with open(filename, 'w') as f:
+        yaml.dump(data, f, indent=4)
+
+
 def check_accounts(gf_token: str):
     accounts = read()
     if gf_token in accounts:
@@ -302,6 +312,13 @@ def check_accounts(gf_token: str):
     return accounts
 
 
+def session_expired_from_headers(headers: dict) -> bool:
+    set_cookie = headers.get("Set-Cookie", "")
+    if "deleted" in set_cookie:
+        return True
+    return False
+
+
 def get_in(gf_token: str, nick: str) -> Tuple[requests.Session, str, Dict]:
     accounts = check_accounts(gf_token)
     if not accounts:
@@ -314,6 +331,14 @@ def get_in(gf_token: str, nick: str) -> Tuple[requests.Session, str, Dict]:
     if not data:
         return None
     server = data["server"]
+    if data.get("cookie") is not None:
+        s = requests.Session()
+        s.cookies = requests.utils.cookiejar_from_dict(data["cookie"])
+        link = f"https://s{server['number']}-{server['language']}.ikariam.gameforge.com/index.php"
+        html = s.get(link)
+        if not session_expired_from_headers(html.headers):
+            return s, html.content.decode(), server
+
     account_id = data["id"]
     
     data = {
@@ -342,4 +367,5 @@ def get_in(gf_token: str, nick: str) -> Tuple[requests.Session, str, Dict]:
     res = s.post("https://lobby.ikariam.gameforge.com/api/users/me/loginLink", json=data)
     url = res.json()["url"]
     html = s.get(url, verify=do_ssl_verify).text
+    save_cookie(gf_token, nick, requests.utils.dict_from_cookiejar(s.cookies))
     return s, html, server

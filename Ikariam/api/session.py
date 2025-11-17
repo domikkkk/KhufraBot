@@ -89,6 +89,10 @@ class IkaBot:
         time.sleep(0.5)
         try:
             result = self.s.post(link, data=data).json()
+            if not result:
+                result = self.load_data(data.get("backgroundView", CITY_VIEW))
+                self.data = UpdateData(result[0][1])
+                return True
             self.data = UpdateData(result[0][1])
             if self.data is not None:
                 self.actionrequest = self.data.actionRequest
@@ -109,21 +113,21 @@ class IkaBot:
         return False
 
     def set_action_request(self) -> None:
-        # data = {
-        #     "highscoreType": "score", #"army_score_main",  # score
-        #     "offset": -1,
-        #     "view": "highscore",
-        #     "sbm": "Submit",
-        #     "searchUser": 'Furi',
-        #     "backgroundView": CITY_VIEW,
-        #     "currentCityId": '',
-        #     "templateView": "highscore",
-        #     "actionRequest": self.actionrequest,
-        #     "ajax": 1
-        # }
-        # self._send_request(data, update_cities=True)
-        html = self.s.get(self.link).content
+        html = self.s.get(self.link).content.decode()
         self.actionrequest = get_actionRequest(html)
+        self.current_city_id = get_currentcityId(html)
+
+    def load_data(self, view=CITY_VIEW) -> UpdateData:
+        data = {
+            "view": "highscore",
+            "showMe": 1,
+            "backgroundView": view,
+            "currentCityId": self.current_city_id,
+            "actionRequest": self.actionrequest,
+            "ajax": 1
+        }
+        if self._send_request(data, update_cities=True):
+            return self.data
 
     def update_cities(self, cities: dict) -> None:
         self.dict_of_cities = {}
@@ -201,7 +205,7 @@ class IkaBot:
             "cityId": target_city_id,
             "currentCityId": self.current_city_id,
             "backgroundView": view,
-            "templateView": "townHall",
+            "templateView": "townHall" if view == CITY_VIEW else "resource",
             "ajax": 1
         }
         if self._send_request(data):
@@ -330,7 +334,6 @@ class IkaBot:
         }
         if self._send_request(data):
             return self.data
-        return None
 
     @ensure_action_request
     def plant_colony(self, param: PlantColony):
@@ -360,7 +363,6 @@ class IkaBot:
         }
         if self._send_request(data):
             return self.data
-        return None
 
 # ---------------------------------------------------------------------------------------
 

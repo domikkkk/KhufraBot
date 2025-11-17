@@ -1,7 +1,5 @@
 from typing import List, Optional, Dict, Union
-from Ikariam.api.session import ExpiredSession, IkaBot, ensure_action_request
-import requests
-from http.client import IncompleteRead
+from Ikariam.api.session import IkaBot, ensure_action_request
 from Ikariam.dataStructure import Attack, Attacks, Fleets, Troops, EMBASSY, CITY_VIEW
 from Ikariam.api.htmlparser import get_attacks, get_units
 
@@ -106,3 +104,9 @@ class General(IkaBot):
         }
         if self._send_request(data, get_html=True):
             return get_units(self.html[1], land)
+
+    def get_stationed_units(self) -> List[Attack]:
+        return sorted(self.station.keys(), key=lambda x: x.whom)
+
+    def get_open_battle(self) -> List[Attack]:
+        return sorted(self.open_battle.keys(), key=lambda x: x.whom)

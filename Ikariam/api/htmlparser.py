@@ -1,7 +1,8 @@
 from bs4 import BeautifulSoup, Tag
 import re
-from Ikariam.dataStructure import Attack, Fleets, Troops, Player
+from Ikariam.dataStructure import Attack, Fleets, Troops, Player, backGroundData
 from typing import List, Optional, Dict, Union, Tuple
+import json
 
 
 def get_fleet(html: str):
