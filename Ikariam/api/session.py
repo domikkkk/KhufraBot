@@ -76,6 +76,7 @@ class IkaBot:
             "Sec-Fetch-Mode": "navigate",
             "Upgrade-Insecure-Requests": "1"
         }
+        self.load_data()
 
     def _send_request(self,
                      data: Dict,
@@ -116,6 +117,7 @@ class IkaBot:
         html = self.s.get(self.link).content.decode()
         self.actionrequest = get_actionRequest(html)
         self.current_city_id = get_currentcityId(html)
+        self.load_data()
 
     def load_data(self, view=CITY_VIEW) -> UpdateData:
         data = {

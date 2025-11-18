@@ -16,7 +16,6 @@ def ensure_embassy(func):
 class General(IkaBot):
     def __init__(self, gf_token: str, nick: str) -> None:
         super().__init__(gf_token, nick)
-        self.set_action_request()
         self.embassy_position: int = -1
         self.occupy = {}
         self.open_battle = {}
@@ -106,7 +105,7 @@ class General(IkaBot):
             return get_units(self.html[1], land)
 
     def get_stationed_units(self) -> List[Attack]:
-        return sorted(self.station.keys(), key=lambda x: x.whom)
+        return sorted(self.station.keys(), key=lambda x: x.whom.name)
 
     def get_open_battle(self) -> List[Attack]:
-        return sorted(self.open_battle.keys(), key=lambda x: x.whom)
+        return sorted(self.open_battle.keys(), key=lambda x: x.whom.name)
