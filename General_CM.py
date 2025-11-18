@@ -6,6 +6,7 @@ import random
 from Common import ME
 from Ikariam.api.generalBot import General
 from Ikariam.api.session import ExpiredSession
+from Ikariam.dataStructure import Attack
 import asyncio
 from typing import Dict, Tuple, List
 import json
@@ -13,6 +14,7 @@ import decorators
 from datetime import datetime
 from dataclasses import asdict
 import time
+from views.AttackPages import AttackPages
 
 
 intents = discord.Intents().default()
@@ -67,6 +69,7 @@ async def on_ready():
     app_commands.Choice(name="Ląd", value=True),
     app_commands.Choice(name="Flote", value=False),
 ])
+@decorators.check_role(["olek"])
 @decorators.restrict_to_guilds(guilds)
 async def get_units(interaction: discord.Interaction, what: app_commands.Choice[int]):
     global generals
@@ -93,6 +96,17 @@ async def get_units(interaction: discord.Interaction, what: app_commands.Choice[
         await error(interaction, e)
 
 
+@General_Bot.tree.command()
+@decorators.check_role(["olek"])
+@decorators.restrict_to_guilds(guilds)
+async def get_stationed_units(interaction: discord.Interaction):
+    global generals
+    await interaction.response.defer()
+    units = generals[interaction.guild_id].get_stationed_units()
+    pages = AttackPages(interaction, units)
+    await pages.send()
+
+
 @General_Bot.tree.command(description="Tylko dla wtajemniczonych")
 @app_commands.describe(duration="Czas na przerwę od ataków.")
 @app_commands.choices(duration=[
@@ -100,6 +114,7 @@ async def get_units(interaction: discord.Interaction, what: app_commands.Choice[
     app_commands.Choice(name="5min", value=300),
     app_commands.Choice(name="10min", value=600),
     app_commands.Choice(name="15min", value=900),
+    app_commands.Choice(name="1h", value=3600),
 ])
 @decorators.check_role(["olek"])
 @decorators.restrict_to_guilds(guilds)
