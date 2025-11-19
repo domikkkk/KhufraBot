@@ -97,6 +97,17 @@ class Fleets:
 
 
 @dataclass
+class Resource:
+    name: str
+    gold: int
+    wood: int
+    wine: int
+    marble: int
+    crystal: int
+    sulfur: int
+
+
+@dataclass
 class City:
     id: int
     name: str
