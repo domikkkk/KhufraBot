@@ -5,7 +5,7 @@ import re
 import json
 from dataclasses import asdict
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 def ensure_embassy(func):
@@ -84,9 +84,16 @@ class HomeSecretary(IkaBot):
 
     async def task_every_day(self):
         while True:
-            if datetime.now().hour == 23:
-                resources = self.get_resources()
-                resources_dict = {avatar_id: asdict(resources[avatar_id]) for avatar_id in resources}
-                self.save_to_file("pomiary.json", resources_dict)
-            await asyncio.sleep(3600)
-        
+            now = datetime.now()
+            target = now.replace(hour=0, minute=5, second=0, microsecond=0)
+            if now >= target:
+                target += timedelta(days=1)
+
+            # ile sekund czekać
+            wait_seconds = (target - now).total_seconds()
+            await asyncio.sleep(wait_seconds)
+
+            # wykonujemy zadanie
+            resources = self.get_resources()
+            resources_dict = {avatar_id: asdict(resources[avatar_id]) for avatar_id in resources}
+            self.save_to_file("pomiary.json", resources_dict)
