@@ -82,7 +82,7 @@ class HomeSecretary(IkaBot):
             with open(filename, "w") as f:
                 json.dump(date, filename, indent=4)
 
-    async def task_every_day(self, hour=0, minute=0, second=0):
+    async def task_every_day(self, *, hour=0, minute=0, second=0):
         while True:
             now = datetime.now()
             target = now.replace(hour=hour, minute=minute, second=second, microsecond=0)
