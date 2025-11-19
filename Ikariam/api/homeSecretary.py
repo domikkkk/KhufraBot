@@ -6,6 +6,7 @@ import json
 from dataclasses import asdict
 import asyncio
 from datetime import datetime, timedelta
+import os
 
 
 def ensure_embassy(func):
@@ -74,13 +75,16 @@ class HomeSecretary(IkaBot):
         return {avatar_id: Resource(**resources[avatar_id]) for avatar_id in resources}
 
     def save_to_file(self, filename, resources: Dict[str, Dict[str, str|int]]):
-        with open(filename, 'r') as f:
-            data = json.load(f)
-        date = datetime.now().date()
+        if os.path.exists(filename):
+            with open(filename, 'r') as f:
+                data = json.load(f)
+        else:
+            data = {}
+        date = datetime.now().strftime("%Y-%m-%d")
         if not date in data:
             data[date] = resources
             with open(filename, "w") as f:
-                json.dump(date, filename, indent=4)
+                json.dump(data, f, indent=4)
 
     async def task_every_day(self, *, hour=0, minute=0, second=0):
         while True:
