@@ -95,7 +95,7 @@ def get_units(html: str, land=True) -> Dict[str, Optional[Union[Troops, Fleets]]
             if not player_name in units:
                 units[player_name] = []
             for td in row.find_all('td', class_='right'):
-                units[player_name].append(int(td.get_text(strip=True).replace(',', '')))
+                units[player_name].append(int(td.get_text(strip=True).replace(',', '').replace('-', '0')))
     units = {name: obj(*units[name]) for name in units}
     return units
 
