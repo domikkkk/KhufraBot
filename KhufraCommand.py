@@ -9,9 +9,9 @@ import time
 from datetime import datetime, timedelta
 from Ikariam.Koszty import Composition, upkeep_h
 import asyncio
-from Ikariam.api.Cookie import cookie
+from Ikariam.api.Cookie import gf_token_pr, pollux
 from Ikariam.api.session import ExpiredSession
-from Ikariam.api.rgBot import rgBot, Rg_Keeper
+from Ikariam.api.rgBot import rgBot
 import random
 import json
 from typing import Dict, Tuple
@@ -70,7 +70,7 @@ async def on_ready():
     print(len(synced))    
     global rg_bot
     global maps
-    rg_bot = rgBot(cookie, 62)
+    rg_bot = rgBot(gf_token_pr, pollux)
     for id in maps:
         maps[id].scan_map()
     Khufra.loop.create_task(check_generals())
@@ -382,7 +382,7 @@ async def island(interaction: discord.Interaction, x: int, y: int, ally: str='')
         for i, city in enumerate(cities):
             name = f"{i+1}: {city.name}"
             ally = city.AllyTag
-            description = f"{city.owenrName}"
+            description = f"{city.ownerName}"
             if ally:
                 description += f" [{ally}]"
             embed.add_field(name=name, value=description, inline=True)

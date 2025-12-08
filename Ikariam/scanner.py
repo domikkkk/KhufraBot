@@ -7,7 +7,6 @@ import json
 class Scanner:
     def __init__(self, bot: IkaBot, path: str) -> None:
         self.bot = bot
-        self.bot.set_action_request()
         self.path = path
         self.different_letters = {
             'с': 'c',
@@ -29,9 +28,13 @@ class Scanner:
                     continue
                 id = int(islands[x][y][0])
                 name = islands[x][y][1]
+                wonder = islands[x][y][3]
+                resource = islands[x][y][2]
                 islands[x][y] = {
                     "id": id,
                     "name": name,
+                    "resource": resource,
+                    "wonder": wonder,
                     "cities": []
                 }
                 try:

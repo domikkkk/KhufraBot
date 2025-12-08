@@ -277,8 +277,9 @@ class UpdateData:
     def __init__(self, kwargs: dict):
         if isinstance(kwargs, list):
             return
+        backgrounddata = kwargs.get("backgroundData")
         self.actionRequest = kwargs.get("actionRequest")
-        self.backgroundData = backGroundData(kwargs.get("backgroundData"))
+        self.backgroundData = backGroundData(backgrounddata) if backgrounddata else None
         self.headerdata = headerData(kwargs.get("headerData"))
     
 

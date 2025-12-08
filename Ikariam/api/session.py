@@ -382,4 +382,20 @@ class IkaBot:
         }
         if self._send_request(data, get_html=True):
             return get_fleet(self.html[1])
-            
+
+
+
+# ---------------------------------------------------------------------------------------
+
+    @ensure_action_request
+    def get_abyssal_stats(self):
+        data = {
+            "view": "abyssalAmbushParticipate",
+            "activeTab": "participateShips",
+            "backgroundView": "workmap_iso",
+            "templateView": "abyssalAmbushParticipate",
+            "actionRequest": self.actionrequest,
+            "ajax": 1
+        }
+        if self._send_request(data, get_html=True):
+            return self.updateTemplateData
