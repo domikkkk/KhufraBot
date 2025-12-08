@@ -161,6 +161,8 @@ async def check_general():
                         continue
                     # if players is not None:
                     #     whom = f"<@{players.get(whom, whom)}>"
+                    if whom == 'Furi':
+                        continue
                     await channels[id].send(f"<t:{attack.when}:R> {attack.action} - {attack.who.name} {attack.who.f} => {whom} {attack.whom.f} - units: {attack.units}")
             except ExpiredSession:
                 await channels[id].send(f"<@{ME}> potrzebna nowa sesja.")

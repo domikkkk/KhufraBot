@@ -17,7 +17,7 @@ class City:
     name: str
     level: int
     ownerId: int
-    owenrName: str
+    ownerName: str
     AllyId: int
     AllyTag: str=None
     state: str=None
@@ -111,7 +111,7 @@ class Map:
     def get_cities_from_island(self, x, y, *, ally='') -> Optional[Island]:
         island: Island = copy.deepcopy(self.map.get(Pos(x, y), None))
         if ally != '':
-            cities = [city for city in island.cities if ally.lower() in self.get_mapped(city.AllyTag)]
+            cities = [city for city in island.cities if city.AllyTag is not None and ally.lower() in self.get_mapped(city.AllyTag)]
             island.cities = cities
         return island
 
