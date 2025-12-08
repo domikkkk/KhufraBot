@@ -163,6 +163,8 @@ class Position:
     groundId: int
 
     def __init__(self, kwargs: dict):
+        if not kwargs:
+            return
         self.building = kwargs.get("building")  # nazwa po ang
         self.name = kwargs.get("name")  # nazwa w języku
         self.buildingId = kwargs.get("buildingId")  # id budynku
@@ -227,6 +229,8 @@ class curResources:
     sulfur: int  # 4
 
     def __init__(self, kwargs: dict):
+        if not kwargs:
+            return
         self.citizens = kwargs.get("citizens")
         self.population = kwargs.get("population")
         self.wood = kwargs.get("resource")
