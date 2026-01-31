@@ -105,9 +105,9 @@ class rgBot(IkaBot):
     def write_owner(self, rg_name: str, owner: str) -> None:
         self.rg_keepers[rg_name].whose = owner
 
-    def save_as(self):
+    def save_as(self, id=0):
         data = {name: vars(self.rg_keepers[name]) for name in self.rg_keepers }
-        with open("rg_info.json", "w") as f:
+        with open(f"rg_info_{id}.json", "w") as f:
             json.dump(data, f, indent=4)
 
     def get_ranking(self) -> Dict[str, int]:

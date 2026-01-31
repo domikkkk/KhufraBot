@@ -1,15 +1,14 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from Common import ME, CHANNEL
+from Common import ME
 from Ikariam.Islands import Map
-from Ikariam.queue import calc
-from Jap.keyboard import parse_foreach
+# from Ikariam.queue import calc
+# from Jap.keyboard import parse_foreach
 import time
 from datetime import datetime, timedelta
-from Ikariam.Koszty import Composition, upkeep_h
+# from Ikariam.Koszty import Composition, upkeep_h
 import asyncio
-from Ikariam.api.Cookie import gf_token_pr, pollux
 from Ikariam.api.session import ExpiredSession
 from Ikariam.api.rgBot import rgBot
 import random
@@ -68,9 +67,9 @@ tasks: Dict[int, Dict[str, Tuple[asyncio.Task, str, int]]] = {}
 async def on_ready():
     synced = await Khufra.tree.sync()
     print(len(synced))    
-    global rg_bot
+    global rg_bots
     global maps
-    rg_bot = rgBot(gf_token_pr, pollux)
+    rg_bots = {id: rgBot(guilds[id]["rg_bot"]["gf_token"], guilds[id]["rg_bot"]["nick"]) for id in guilds}
     for id in maps:
         maps[id].scan_map()
     Khufra.loop.create_task(check_generals())
@@ -156,15 +155,12 @@ async def update_rg(interaction: discord.Interaction, date: str=None):
             date = datetime(year, month, day=1)
         return date
 
-    global rg_bot
-    if guilds[interaction.guild_id]["name"] != "Meduza":
-        await interaction.followup.send(f"Nie ma tu skarbonek", ephemeral=True)
-        return
+    global rg_bots
     try:
         channel = interaction.guild.get_channel(guilds[interaction.guild_id]["rg_channel"])
         date = filtr_date(date)
         await interaction.followup.send("Aktualizuje skarbonki, chwile to potrwa.{}".format(f" Od {date}" if date else ''))
-        await analyze_history(channel, date)
+        await analyze_history(channel, interaction.guild_id, date)
         await interaction.followup.send("Ukończono")
     except ValueError:
         await interaction.followup.send("Data musi być w formacie YYYY-MM")
@@ -175,9 +171,9 @@ async def update_rg(interaction: discord.Interaction, date: str=None):
 @Khufra.tree.command()
 @restrict_to_guilds(guilds)
 async def save(interaction: discord.Interaction):
-    global rg_bot
+    global rg_bots
     try:
-        rg_bot.save_as()
+        rg_bots[interaction.guild_id].save_as(interaction.guild_id)
         await interaction.response.send_message("Zapisano")
     except Exception as e:
         await error(interaction, e)
@@ -200,7 +196,7 @@ async def update_players(interaction: discord.Interaction):
 async def rg_list(interaction: discord.Interaction):
     await interaction.response.defer()
     try:
-        ranking = rg_bot.get_ranking()
+        ranking = rg_bots[interaction.guild_id].get_ranking()
         response = "# Ranking rg sojuszy"
         for ally in ranking:
             response += f'\n- {ally}\t{ranking[ally]:,}'
@@ -215,27 +211,27 @@ async def rg_list(interaction: discord.Interaction):
 async def owner(interaction: discord.Interaction, name: str):
     await interaction.response.defer()
     try:
-        rg_keepers = rg_bot.guess_rg_holder(name)
+        rg_keepers = rg_bots[interaction.guild_id].guess_rg_holder(name)
         if len(rg_keepers) == 0:
             await interaction.followup.send(f"Nie znaleziono żadnej podobnej skarbonki do {name}")
             return
         response = ""
         for rg_keeper, score in rg_keepers:
-            response += f"{rg_keeper} - {rg_bot.rg_keepers[rg_keeper].whose or 'brak właściciela'} rg: {rg_bot.rg_keepers[rg_keeper].rg}\t{round(score, 2)}\n"
+            response += f"{rg_keeper} - {rg_bots[interaction.guild_id].rg_keepers[rg_keeper].whose or 'brak właściciela'} rg: {rg_bots[interaction.guild_id].rg_keepers[rg_keeper].rg}\t{round(score, 2)}\n"
         await interaction.followup.send(response)
     except Exception as e:
         await error(interaction, e)
 
 
-@Khufra.tree.command(description="Stara się zamienić tekst romaji na zapis w\
-    katakanie")
-@app_commands.describe(text="To co chcesz dostać po japońsku w katakanie")
-async def kana(interaction: discord.Interaction, text: str):
-    try:
-        res = parse_foreach(text)
-        await interaction.response.send_message(res)
-    except Exception as e:
-        await error(interaction, e)
+# @Khufra.tree.command(description="Stara się zamienić tekst romaji na zapis w\
+#     katakanie")
+# @app_commands.describe(text="To co chcesz dostać po japońsku w katakanie")
+# async def kana(interaction: discord.Interaction, text: str):
+#     try:
+#         res = parse_foreach(text)
+#         await interaction.response.send_message(res)
+#     except Exception as e:
+#         await error(interaction, e)
 
 
 @Khufra.tree.command(description="To chyba oczywiste...")
@@ -244,34 +240,34 @@ async def ping(interaction: discord.Interaction):
         f"{round(Khufra.latency * 1000, 1)}ms")
 
 
-@Khufra.tree.command(description="Szuka możliwych koordynatów skąd przeciwnik\
-    może skupować rg")
-@app_commands.describe(x='Kordynat x wyspy', y="Kordynat y wyspy", h="Godziny\
-    płynięcia", m="Minuty płynięcia", s="Sekundy płynięcia")
-async def find(interaction: discord.Interaction, x: int, y: int, h: int,
-               m: int, s: int):
-    args = [x, y, h, m, s]
-    content = f"Searching from [{x} {y}] with time {h}:{m}:{s}\n"
-    try:
-        res = calc(*args)
-        await interaction.response.send_message(content)
-        time.sleep(1)
-        await interaction.channel.send(res)
-    except Exception as e:
-        await error(interaction, e)
+# @Khufra.tree.command(description="Szuka możliwych koordynatów skąd przeciwnik\
+#     może skupować rg")
+# @app_commands.describe(x='Kordynat x wyspy', y="Kordynat y wyspy", h="Godziny\
+#     płynięcia", m="Minuty płynięcia", s="Sekundy płynięcia")
+# async def find(interaction: discord.Interaction, x: int, y: int, h: int,
+#                m: int, s: int):
+#     args = [x, y, h, m, s]
+#     content = f"Searching from [{x} {y}] with time {h}:{m}:{s}\n"
+#     try:
+#         res = calc(*args)
+#         await interaction.response.send_message(content)
+#         time.sleep(1)
+#         await interaction.channel.send(res)
+#     except Exception as e:
+#         await error(interaction, e)
 
 
-@Khufra.tree.command(description="Wyznacza skład na podany czas z zapasem na\
-    około 1h")
-@app_commands.describe(t='Na ile h flota?', lv='Poziom przyszłości żeglugi?')
-async def ships(interaction: discord.Interaction, t: int, lv: int = 0):
-    try:
-        fleet = Composition(t)
-        upkeep = upkeep_h(fleet, lv)
-        content = f'{fleet}\n Koszt utrzymania na 1h: {upkeep}'
-        await interaction.response.send_message(content)
-    except Exception as e:
-        await error(interaction, e)
+# @Khufra.tree.command(description="Wyznacza skład na podany czas z zapasem na\
+#     około 1h")
+# @app_commands.describe(t='Na ile h flota?', lv='Poziom przyszłości żeglugi?')
+# async def ships(interaction: discord.Interaction, t: int, lv: int = 0):
+#     try:
+#         fleet = Composition(t)
+#         upkeep = upkeep_h(fleet, lv)
+#         content = f'{fleet}\n Koszt utrzymania na 1h: {upkeep}'
+#         await interaction.response.send_message(content)
+#     except Exception as e:
+#         await error(interaction, e)
 
 
 @Khufra.tree.command(description="Discordowy licznik")
@@ -313,8 +309,8 @@ async def garrison(interaction: discord.Interaction, what: app_commands.Choice[i
         await interaction.response.send_message(sea)
 
 
-@Khufra.tree.command(description="Wyznacza ilość punktów akcji dla podanego\
-    poziomu ratusza")
+@Khufra.tree.command(description="Wyznacza liczbę punktów akcji dla podanego\
+poziomu ratusza")
 @app_commands.describe(r="Poziom ratusza")
 async def a_p(interaction: discord.Interaction, r: int):
     if r < 1:
@@ -330,10 +326,10 @@ async def a_p(interaction: discord.Interaction, r: int):
 @app_commands.describe(rg_keeper="Nazwa skarbonki, którą chcemy przypisać", owner="Właściciel")
 @restrict_to_guilds(guilds)
 async def assign(interaction: discord.Interaction, rg_keeper: str, owner: str):
-    global rg_bot
+    global rg_bots
     await interaction.response.defer()
     try:
-        res, bugs = rg_bot.load_owners(rg_keeper, owner)
+        res, bugs = rg_bots[interaction.guild_id].load_owners(rg_keeper, owner)
         if bugs is not None:
             await interaction.followup.send(f"Nie znaleziono takiej skarbonki {bugs[0]}")
         else:
@@ -393,36 +389,37 @@ async def island(interaction: discord.Interaction, x: int, y: int, ally: str='')
 
 async def check_generals():
     await Khufra.wait_until_ready()
-    global rg_bot
+    global rg_bots
     loop = asyncio.get_running_loop()
-    channel = Khufra.get_channel(CHANNEL)
+    channels = {id: Khufra.get_channel(guilds[id]["rg_channel"]) for id in guilds}
     top = 300
     i = 0
     while not Khufra.is_closed():
-        try:
-            res = await loop.run_in_executor(None, rg_bot.analize_rg, 50 * i)
-            for every_palm in res:
-                if every_palm[1] == -1:
-                    await channel.send(f"{every_palm[0]} poszedł pod :palm_tree:")
-                else:
-                    mes = f"{every_palm[0]} zszedł z urlopu. Rg: {every_palm[1]}."
-                    if every_palm[2]:
-                        mes += f" Czyje: {every_palm[2]}"
-                    await channel.send(mes)
-            i += 1
-            i = i % (top//50)
-        except ExpiredSession:
-            await channel.send(f"<@{ME}> potrzebna nowa sesja.")
-            break
-        except Exception as e:
-            with open("error.txt", 'w') as f:
-                f.write(str(e))
-        finally:
-            await asyncio.sleep(random.randint(8, 12))
+        for id in guilds:
+            try:
+                res = await loop.run_in_executor(None, rg_bots[id].analize_rg, 50 * i)
+                for every_palm in res:
+                    if every_palm[1] == -1:
+                        await channels[id].send(f"{every_palm[0]} poszedł pod :palm_tree:")
+                    else:
+                        mes = f"{every_palm[0]} zszedł z urlopu. Rg: {every_palm[1]}."
+                        if every_palm[2]:
+                            mes += f" Czyje: {every_palm[2]}"
+                        await channels[id].send(mes)
+                i += 1
+                i = i % (top//50)
+            except ExpiredSession:
+                await channels[id].send(f"<@{ME}> potrzebna nowa sesja.")
+                break
+            except Exception as e:
+                with open("error.txt", 'w') as f:
+                    f.write(str(e))
+            finally:
+                await asyncio.sleep(random.randint(8, 12))
 
 
-async def analyze_history(channel: discord.TextChannel, date: datetime=None):
-    global rg_bot
+async def analyze_history(channel: discord.TextChannel, id: int, date: datetime=None):
+    global rg_bots
 
     async def find_from_message(message: discord.Message):
         owner, rg_keeper = None, None
@@ -438,8 +435,8 @@ async def analyze_history(channel: discord.TextChannel, date: datetime=None):
                 owner = match.group(2) or None         # po "Czyje:"
 
         if owner and rg_keeper:
-            if rg_keeper in rg_bot.rg_keepers and not rg_bot.rg_keepers[rg_keeper].whose:
-                rg_bot.write_owner(rg_keeper, owner)
+            if rg_keeper in rg_bots[id].rg_keepers and not rg_bots[id].rg_keepers[rg_keeper].whose:
+                rg_bots[id].write_owner(rg_keeper, owner)
 
     async for message in channel.history(limit=None, oldest_first=False, after=date):
         if not message.author.bot:

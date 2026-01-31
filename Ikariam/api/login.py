@@ -332,17 +332,21 @@ def get_in(gf_token: str, nick: str) -> Tuple[requests.Session, str, Dict]:
         return None
     server = data["server"]
     if data.get("cookie") is not None:
+        print("Found old cookie. Checking...")
         s = requests.Session()
         s.cookies = requests.utils.cookiejar_from_dict(data["cookie"])
         link = f"https://s{server['number']}-{server['language']}.ikariam.gameforge.com/index.php"
         html = s.get(link)
         if not session_expired_from_headers(html.headers):
+            print('Cookie ok')
             return s, html.content.decode(), server
+        print("Invalid cookie. Generating new one...")
 
     account_id = data["id"]
     
     data = {
-        "blackbox": getNewBlackBoxToken(),
+        # "blackbox": getNewBlackBoxToken(),
+        "blackbox": "tra:JVqczf8kVpm-8CJn3E69LZK36S-G51nMLaTJ-y1ShMfsHlCnEH7iUcg7YJLE6Rteg7XnKpIEc-BFapzO8yVojb_xOKcWfelOc6XVHozvHUJ0psv9QHidzxJKb6HkCTtt3Ul2xhI3aawciK3fIof1InfK7yFkyTdcjsDlF1p_seNJfbTnS3-26RlKfeEWTrEWe7LqIVSG6yRbj_NXi-xShOkhhbXmFkt_s-xPgrruJFmR9Fa87SJSh-wgULUZfrPjCDpskcMGK12P1kW0G4fsEUNzvCqNu-ASQmqzIZX6Zo-05ilquP9LkLXnFz-I9mrPO2CS1fosXKUTh-xYgNL7IFKCyz2mGUGTvOETQ5P_dOcMPm61J4j4YMksn8T2Jk5-9iZWhrbuL2SWv-QWRorzZcotodQYSXqf0QF36kl-3Q0yZJQEd9YLapq_8TRZi7v_Mnan2AEmWIqv4SRJe60PQKTcP3er30Kn1w91pdc5as40Zp3TCTtyqw0_dKfZDG3RBDicAjqdAjdvowdpy_tckfRYkMT5K17C8ytev_EnTH6w1QdKb6HTN3DRN27PMGHF9SWLve0fhLzuJ1i-I1eQ8iteksYsYpvSBjxypdo_pAU6bdIJbs8yl80FaJnJL2KSxCeKw_Ypiq_hEzhqrd4URHSZyw5Ge63SBEdsntA2a54AM2WeAjpwqAw8caHTCW2iB2qazgFim9EHP3Wo2A5FerLqH4O58FaGuvEjVIa57lC1G36x4hJ2qeAXe7LmCz1vlMYJLmCSxyhYvSNVi_FVjvRaisP5L2egBmvMLZHBJVmS-FqSx_wtZZfJLo_FJ1q8IViM7R1Phr_zVojpSnurEHHVBjpr0fYoWn-x9BlLfbMUedsRRXaoCjxw0jNqzjJimtAFOJ3_NGSVzAU1Z53TAzVpotsURXzdE0d3p9gPQ6niQ6feQ3zeQ6ngGHnbQXOYyvwhU5a77R9RgrPjF0qu5Rd9sRVFp9gNcqQKcNEzbNE0mP0uZMoBZJj6MpfKAzOWzS-V9ytbwPcpj_Mliu1RiLscfa8SRarfBDZojb8CM2WZx_crXpLJ_jBnnM0DM2qew_U4XY_B91y-H4HlHVOHux5XuvEiWpHyKl2Rxixdk8wxaaAEOJz9MWHC8yNVisHyKV6_IVSH6RtOsOJIgLXnH4K58Sdak7jqHEFztucXSoG05x5Qhr3iFFd8ruASQnSq1wc4ZZbPI1SHrN8gVYit4CFWjbvrHlSu0wU3XI7R9ihawyuYB2zQNKkej8M9suhaviedDXvsTscrX9hLcKLU-Stun9AEOF2P0vcpW4y84RNFapzfBDZozRV98T2A1Ued8yh1yEKbzDBipNQdc7ghbbMNPZT-Zdg6bKX2SHnDOYTxIobbSZvOHYfZMpT-TMAka7UjbsYtZbAZb6IGcsg2nOBEnvE0mN4_hsgXbbEgVJ0Ib943fb8vhf9VoPRtxjKBxhiS7C99zBaDuy5_7DaP8FmqzwFDj9QtUoTKFFnNJ3_SE4vZU6zgL3PAN4bKF0iX20a_5BZIbZ_iBzlruCehCnbiQ2ia4BVDc5jK-iJ54lC0I5oNMmSU4jZbjb3uHkx8odQWO22d9F3LATVajc_0JlbOBDhhhrjoKZkJddoxlvhDrCBFd73yJVyKvfMYSnqi7TWJ1iJHebzhE0OvGIPoDT9vtht-6ViBptgIS7MllAFmi70DNGibyfknV4W12gw8j_BWtymSt-kvZJfO_C9lirzuE0WIrd8RQ3Ol2wg4aZbHAFSFuN0QUYa53hFSh77sHEx81vstX4S2-WfcSLTZC06AtesQRYk",
         "clickedButton": "account_list",
         "id": account_id,
         "server": server
