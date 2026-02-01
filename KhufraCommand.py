@@ -392,12 +392,11 @@ async def check_generals():
     global rg_bots
     loop = asyncio.get_running_loop()
     channels = {id: Khufra.get_channel(guilds[id]["rg_channel"]) for id in guilds}
-    top = 300
-    i = 0
+    i = {id: 0 for id in guilds}
     while not Khufra.is_closed():
-        for id in guilds:
-            try:
-                res = await loop.run_in_executor(None, rg_bots[id].analize_rg, 50 * i)
+        try:
+            for id in guilds:
+                res = await loop.run_in_executor(None, rg_bots[id].analize_rg, 50 * i[id])
                 for every_palm in res:
                     if every_palm[1] == -1:
                         await channels[id].send(f"{every_palm[0]} poszedł pod :palm_tree:")
@@ -406,16 +405,16 @@ async def check_generals():
                         if every_palm[2]:
                             mes += f" Czyje: {every_palm[2]}"
                         await channels[id].send(mes)
-                i += 1
-                i = i % (top//50)
-            except ExpiredSession:
-                await channels[id].send(f"<@{ME}> potrzebna nowa sesja.")
-                break
-            except Exception as e:
-                with open("error.txt", 'w') as f:
-                    f.write(str(e))
-            finally:
-                await asyncio.sleep(random.randint(8, 12))
+                i[id] += 1
+                i[id] = i[id] % (guilds[id]["rg_bot"]["top"] // 50)
+        except ExpiredSession:
+            await channels[id].send(f"<@{ME}> potrzebna nowa sesja.")
+            break
+        except Exception as e:
+            with open("error.txt", 'w') as f:
+                f.write(str(e))
+        finally:
+            await asyncio.sleep(random.randint(8, 12))
 
 
 async def analyze_history(channel: discord.TextChannel, id: int, date: datetime=None):
