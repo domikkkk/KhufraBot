@@ -59,7 +59,7 @@ async def on_ready():
     synced = await General_Bot.tree.sync()
     print(synced)
     global generals
-    generals = {id: General(guilds[id]["gf_token"], guilds[id]["nick"]) for id in guilds}
+    generals = {id: General(guilds[id]["gf_token"], guilds[id]["nick"]) for id in guilds if guilds[id]["name"] == "Meduza"}
     General_Bot.loop.create_task(check_general())
 
 
@@ -148,7 +148,7 @@ async def check_general():
     await General_Bot.wait_until_ready()
     global generals
     loop = asyncio.get_running_loop()
-    channels = {id: General_Bot.get_channel(guilds[id]["general_warnings"]) for id in guilds}
+    channels = {id: General_Bot.get_channel(guilds[id]["general_warnings"]) for id in guilds if guilds[id]["name"] == "Meduza"}
     while not General_Bot.is_closed():
         await asyncio.sleep(180)
         for id in channels:
