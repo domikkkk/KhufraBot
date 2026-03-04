@@ -5,7 +5,8 @@ import os
 import subprocess
 from pathlib import Path
 import yaml
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List
+from datetime import datetime, timedelta
 
 do_ssl_verify = True
 
@@ -265,16 +266,25 @@ def read() -> dict:
     return data
 
 
-def save(accounts: dict, gf_token: str):
+def save(accounts_from_req: dict, gf_token: str):
     data = read()
     filename = Path.cwd() / "accounts.yaml"
-    if not gf_token in data:
-        for account in accounts:
-            del account["sitting"]
-            del account["trading"]
-        data[gf_token] = accounts
-        with open(filename, 'w') as f:
-            yaml.dump(data, f, indent=4)
+    accounts_id = {}
+    for account in accounts_from_req:
+        del account["sitting"]
+        del account["trading"]
+        accounts_id[account["id"]] = account
+
+    for account in data[gf_token]:
+        if account.get("cookie"):
+            if account["id"] in accounts_id:
+                accounts_id[account["id"]]["cookie"] = account.get("cookie")
+    accounts_from_req = list(accounts_id.values())
+
+    data[gf_token] = accounts_from_req
+
+    with open(filename, 'w') as f:
+        yaml.dump(data, f, indent=4)
 
 
 def save_cookie(gf_token: str, nick: str, cookie: dict):
@@ -285,12 +295,33 @@ def save_cookie(gf_token: str, nick: str, cookie: dict):
             account["cookie"] = cookie
     with open(filename, 'w') as f:
         yaml.dump(data, f, indent=4)
+    print("Succesfully saved cookie...")
 
 
-def check_accounts(gf_token: str):
+def idx(accounts: List[Dict], nick: str):
+    for account in accounts:
+        if account["name"] == nick:
+            return account
+
+
+def check_account(gf_token: str, nick: str = None):
     accounts = read()
+    update = False
     if gf_token in accounts:
-        return accounts[gf_token]
+        print("Found gf_token")
+        account = idx(accounts[gf_token], nick)
+        if account:
+            print(f"Found account {nick}.")
+            lastPlayed = datetime.strptime(account.get('lastPlayed'), "%Y-%m-%dT%H:%M:%S%z")
+            # lastLogin = datetime.strptime(accounts[gf_token][nick].get('lastLogin'), "%Y-%m-%dT%H:%M:%S%z")
+            week_before = datetime.now(lastPlayed.tzinfo) - timedelta(days=7)
+            if lastPlayed > week_before:
+                return account
+            else:
+                update = True
+                print("Last login over 1 week ago...")
+        else:
+            print(f"Didnt find account {nick}")
     headers = {
         "authorization": f"Bearer {gf_token}",
         "sec-fetch-site": "same-origin",
@@ -305,11 +336,14 @@ def check_accounts(gf_token: str):
         "accept-encoding": "gzip, deflate, br, zstd",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
     }
+    print("Checking accounts")
     accounts = requests.get("https://lobby.ikariam.gameforge.com/api/users/me/accounts", headers=headers).json()
     if 'error' in accounts:
         return None
     save(accounts, gf_token)
-    return accounts
+    print("Updated accounts.")
+    account = idx(accounts, nick)
+    return account
 
 
 def session_expired_from_headers(headers: dict) -> bool:
@@ -320,29 +354,23 @@ def session_expired_from_headers(headers: dict) -> bool:
 
 
 def get_in(gf_token: str, nick: str) -> Tuple[requests.Session, str, Dict]:
-    accounts = check_accounts(gf_token)
-    if not accounts:
+    account = check_account(gf_token, nick)
+    if not account:
         return None
-    data = None
-    for account in accounts:
-        if nick == account["name"]:
-            data = account
-            break
-    if not data:
-        return None
-    server = data["server"]
-    if data.get("cookie") is not None:
+    server = account["server"]
+    if account.get("cookie") is not None:
         print("Found old cookie. Checking...")
         s = requests.Session()
-        s.cookies = requests.utils.cookiejar_from_dict(data["cookie"])
+        s.cookies = requests.utils.cookiejar_from_dict(account["cookie"])
         link = f"https://s{server['number']}-{server['language']}.ikariam.gameforge.com/index.php"
         html = s.get(link)
         if not session_expired_from_headers(html.headers):
             print('Cookie ok')
             return s, html.content.decode(), server
         print("Invalid cookie. Generating new one...")
+    print("Didn't find cookie.")
 
-    account_id = data["id"]
+    account_id = account["id"]
     
     data = {
         # "blackbox": getNewBlackBoxToken(),
@@ -368,8 +396,10 @@ def get_in(gf_token: str, nick: str) -> Tuple[requests.Session, str, Dict]:
 
     s = requests.Session()
     s.headers = headers
+    print("Getting in...")
     res = s.post("https://lobby.ikariam.gameforge.com/api/users/me/loginLink", json=data)
     url = res.json()["url"]
     html = s.get(url, verify=do_ssl_verify).text
     save_cookie(gf_token, nick, requests.utils.dict_from_cookiejar(s.cookies))
+    print("Succesfully loged in...")
     return s, html, server
