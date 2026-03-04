@@ -428,10 +428,13 @@ async def analyze_history(channel: discord.TextChannel, id: int, date: datetime=
             owner, rg_keeper = match.groups()
 
         else:
-            match = re.search(r"^(.*?) zszedł.*?(?:Czyje:\s*(\S+))?", message.content)
-            if match:
-                rg_keeper = match.group(1)             # nick
-                owner = match.group(2) or None         # po "Czyje:"
+            match_keeper = re.search(r'^"?(.+?)"?\s+zszedł z urlopu', message.content)
+            if match_keeper:
+                rg_keeper = match_keeper.group(1).strip()
+
+            match_owner = re.search(r'Czyje:\s*(.+)', message.content)
+            if match_owner:
+                owner = match_owner.group(1).strip()
 
         if owner and rg_keeper:
             if rg_keeper in rg_bots[id].rg_keepers and not rg_bots[id].rg_keepers[rg_keeper].whose:
